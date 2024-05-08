@@ -44,7 +44,7 @@ Oscillators within a single device can be accessed independently.
 |------------|------------|----------------|
 | 1 byte     | 2 bytes    | 0..65532 bytes |
 
-Table 1 - Command/reply format
+**Table 1** - Command/reply format
 
 The reply for a command has to use the same value in its ID field.
 Byte count includes **all** bytes in the sequence.
@@ -76,6 +76,8 @@ Note : the table below is still under development and therefore is subject to ch
 | 0x86    | 3          | Get TX frequency correction           | -                            | float[2]                   | 7            |
 | ...     | ...        | ...                                   | ...                          | ...                        | ...          |
 
+**Table 2** - Command list.
+
 All values are little-endian. Return value of 0 means success, any other value is an error code.
 Parameter of 0 disables the function, 1 enables it.
 
@@ -85,12 +87,15 @@ Parameter of 0 disables the function, 1 enables it.
 
 ### Device's capabilities flags
 
-| Flag       | Meaning                                     |
+| Bit        | Meaning                                     |
 |------------|---------------------------------------------|
-| 0x01       | Amplitude modulation (incl. CW)             |
-| 0x02       | Frequency modulation (incl. M17 and AFSK)   |
-| 0x04       | Single sideband (incl. FreeDV)              |
-| 0x08       | Phase shift keying (incl. pi/4-DQPSK)       |
-| 0x10       | Raw I/Q                                     |
-| 0x20..0x40 | Reserved                                    |
-| 0x80       | Simplex=0/duplex=1                          |
+| 0 (LSB)    | Amplitude modulation (incl. CW)             |
+| 1          | Frequency modulation (incl. M17 and AFSK)   |
+| 2          | Single sideband (incl. FreeDV)              |
+| 3          | Phase shift keying (incl. pi/4-DQPSK)       |
+| 4          | I/Q modulation available                    |
+| 5          | Baseband stream compression available       |
+| 6          | Supervision channel available               |
+| 7 (MSB)    | Simplex=0/duplex=1                          |
+
+**Table 3** - Capabilities flags
