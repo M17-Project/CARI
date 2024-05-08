@@ -1,15 +1,56 @@
-## Common Amateur Radio Interface (CARI) Command Set
+## Common Amateur Radio Interface (CARI)
 
-### Caveat
-CARI protocol along with the table below is still under development and therefore is subject to change.
+### Introduction
+CARI protocol is supposed to mimic professionally used *Common Public Radio Interface* (CPRI)
+and offer a part of its functionality.
+The protocol allows for basic data, control and supervision plane access, letting the user directly control
+radio devices over a given medium. [ZeroMQ](https://zeromq.org/) is used for all data transfers.<br>
 
-### Command format
+**Note:** Multi-oscillator (n>2) and MIMO device support is still work-in-progress.
+
+### Basic topology
+The interface assumes there are at least two devices: master and controlled device (slave), connected over some physical medium.
+At the minimum, there are 4 paths for the signal flow:
+- baseband uplink
+- baseband downlink
+- control
+- supervision
+
+Baseband uplink and downlink connections can only be used when required. Baseband streams are managed by ZMQ PUB-SUB pairs.
+
+Control plane is used for setting radio equipment's parameters, such as oscillators' frequencies and RF signals' power levels.
+This path uses a ZMQ REP-REQ pair.<br>
+Supervision plane gives access to basic telemetry data: chassis temperature, reflected RF power, etc. The slave device
+offers telemetry data over its ZMQ PUB instance.<br>
+For multi-oscillator devices, there can be more than one pair of baseband streams.
+
+**Note:** only two devices can exchange CARI command-reply pairs at the same time. In other words - only
+one slave device can be addressed within a single transaction. To set a desired parameter over multiple devices,
+it is required to issue several commands.
+
+In the example below, the Baseband Unit (BBU) acts as a master over the Remote Radio Unit (RRU).
+
+![CARI example](../gfx/CARI.png)
+
+### Command/reply format
+A *command* is a sequence of bytes sent by the master device, executing a particular action
+at the controlled device.<br>
+A *reply* is a similar sequence sent back by the controlled device as an acknowledgement.
+Replies may contain return values for error signalling.<br>
+Since there is no device addressing, the physical layer has to provide it.
+Oscillators within a single device can be accessed independently.
 
 | Command ID | Byte count | Params         |
 |------------|------------|----------------|
 | 1 byte     | 2 bytes    | 0..65532 bytes |
 
+Table 1 - Command/reply format
+
+The reply for a command has to use the same value in its ID field.
+Byte count includes **all** bytes in the sequence.
+
 ### Command list
+Note : the table below is still under development and therefore is subject to change.
 
 | Command | Byte count | Action                                | Parameters                   | Return value               | Total length |
 |---------|------------|---------------------------------------|------------------------------|----------------------------|--------------|
@@ -42,7 +83,7 @@ Parameter of 0 disables the function, 1 enables it.
 [2] The unit for this setting is *ppm*<br>
 [3] The string does not have to be null-terminated<br>
 
-### Device's capabilities
+### Device's capabilities flags
 
 | Flag       | Meaning                                     |
 |------------|---------------------------------------------|
