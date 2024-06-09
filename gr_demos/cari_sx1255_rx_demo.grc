@@ -1,0 +1,933 @@
+options:
+  parameters:
+    author: Wojciech Kaczmarski SP5WWP
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: M17 Project 2024
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: wav_iq_spectrum
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: SX1255 ZeroMQ (CARI) IQ source
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: freq
+  id: variable
+  parameters:
+    comment: ''
+    value: 435e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [416, 12.0]
+    rotation: 0
+    state: true
+- name: rru_addr
+  id: variable
+  parameters:
+    comment: ''
+    value: '"192.168.50.209"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 12.0]
+    rotation: 0
+    state: true
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '125000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 12]
+    rotation: 0
+    state: enabled
+- name: analog_quadrature_demod_cf_0
+  id: analog_quadrature_demod_cf
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    gain: 48000.0/(2*math.pi*800.0)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1392, 316.0]
+    rotation: 0
+    state: disabled
+- name: blocks_complex_to_float_0
+  id: blocks_complex_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [256, 176.0]
+    rotation: 0
+    state: disabled
+- name: blocks_interleaved_short_to_complex_0
+  id: blocks_interleaved_short_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale_factor: '0x8000'
+    swap: 'False'
+    vector_input: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [248, 508.0]
+    rotation: 0
+    state: enabled
+- name: blocks_moving_average_xx_0
+  id: blocks_moving_average_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    length: '1000'
+    max_iter: '1000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: 1/1000
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [256, 348.0]
+    rotation: 0
+    state: enabled
+- name: blocks_sub_xx_0
+  id: blocks_sub_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [464, 288.0]
+    rotation: 0
+    state: enabled
+- name: blocks_wavfile_sink_0
+  id: blocks_wavfile_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    bits_per_sample1: FORMAT_FLOAT
+    bits_per_sample2: FORMAT_PCM_16
+    bits_per_sample3: FORMAT_VORBIS
+    bits_per_sample4: FORMAT_PCM_16
+    comment: ''
+    file: ./dump.wav
+    format: FORMAT_WAV
+    nchan: '2'
+    samp_rate: samp_rate
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [424, 156.0]
+    rotation: 0
+    state: disabled
+- name: digital_symbol_sync_xx_0_0
+  id: digital_symbol_sync_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    constellation: digital.constellation_bpsk().base()
+    damping: '1.0'
+    loop_bw: 2.0*math.pi*0.000015
+    max_dev: '0.005'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nfilters: '128'
+    osps: '10'
+    pfb_mf_taps: '[]'
+    resamp_type: digital.IR_MMSE_8TAP
+    sps: '10'
+    ted_gain: '1.0'
+    ted_type: digital.TED_GARDNER
+    type: ff
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1776, 260.0]
+    rotation: 0
+    state: disabled
+- name: fir_filter_xxx_0
+  id: fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_delay: '0'
+    taps: '[0.000197695583, -0.000036008008, 0.000039274933, -0.000042729681, 0.000046380231,
+      -0.000050233909, 0.000054298192, -0.000058581637, 0.000063093698, -0.000067841979,
+      0.000072835122, -0.000078084681, 0.000083598110, -0.000089382883, 0.000095450865,
+      -0.000101811908, 0.000108473888, -0.000115452479, 0.000122752228, -0.000130388780,
+      0.000138369816, -0.000146707831, 0.000155412681, -0.000164496496, 0.000173970649,
+      -0.000183847610, 0.000194140539, -0.000204860855, 0.000216021912, -0.000227635589,
+      0.000239717132, -0.000252279201, 0.000265338906, -0.000278908335, 0.000293002557,
+      -0.000307635613, 0.000322822614, -0.000338579892, 0.000354925219, -0.000371873556,
+      0.000389441103, -0.000407643761, 0.000426497302, -0.000446020258, 0.000466230156,
+      -0.000487148092, 0.000508779123, -0.000531162622, 0.000554284844, -0.000578200926,
+      0.000602911519, -0.000628429716, 0.000654789012, -0.000682009867, 0.000710106410,
+      -0.000739100882, 0.000769017578, -0.000799879898, 0.000831710093, -0.000864524888,
+      0.000898346618, -0.000933209570, 0.000969132891, -0.001006124024, 0.001044228783,
+      -0.001083451076, 0.001123831678, -0.001165386493, 0.001208141683, -0.001252120873,
+      0.001297351425, -0.001343861051, 0.001391678920, -0.001440834188, 0.001491353537,
+      -0.001543265948, 0.001596600113, -0.001651385820, 0.001707652260, -0.001765429547,
+      0.001824743557, -0.001885623961, 0.001948097744, -0.002012195988, 0.002077949490,
+      -0.002145392318, 0.002214557806, -0.002285481842, 0.002358200535, -0.002432749342,
+      0.002509164415, -0.002587478603, 0.002667726157, -0.002749934079, 0.002834138862,
+      -0.002920363984, 0.003008649713, -0.003099031904, 0.003191555178, -0.003286272943,
+      0.003383233823, -0.003482479159, 0.003584041643, -0.003687936658, 0.003794173073,
+      -0.003902780174, 0.004013833784, -0.004127461044, 0.004243770692, -0.004362665764,
+      0.004483723159, -0.004608044835, 0.004734784003, -0.004864364084, 0.004996752688,
+      -0.005132001194, 0.005270156596, -0.005411266138, 0.005555377653, -0.005702541972,
+      0.005852809600, -0.006006228231, 0.006162849817, -0.006322727145, 0.006485910732,
+      -0.006652453639, 0.006822411334, -0.006995833709, 0.007172781223, -0.007353305467,
+      0.007537465733, -0.007725317598, 0.007916920630, -0.008112333834, 0.008311618786,
+      -0.008514836958, 0.008722049468, -0.008933319707, 0.009148710425, -0.009368288471,
+      0.009592119185, -0.009820272961, 0.010052815028, -0.010289816845, 0.010531347436,
+      -0.010777479194, 0.011028286872, -0.011283845610, 0.011544230106, -0.011809518412,
+      0.012079788179, -0.012355120008, 0.012635598299, -0.012921307124, 0.013212332134,
+      -0.013508755133, 0.013810681220, -0.014118168124, 0.014431364261, -0.014750303007,
+      0.015075112991, -0.015405902385, 0.015742752141, -0.016085765838, 0.016435061368,
+      -0.016790748204, 0.017152932435, -0.017521725210, 0.017897245649, -0.018279622730,
+      0.018668981115, -0.019065434904, 0.019469113392, -0.019880161002, 0.020298700759,
+      -0.020724890508, 0.021158860608, -0.021600764631, 0.022050752622, -0.022508985151,
+      0.022975626811, -0.023450847862, 0.023934820944, -0.024427722029, 0.024929734343,
+      -0.025441045646, 0.025961852241, -0.026492356476, 0.027032768362, -0.027583302645,
+      0.028144185176, -0.028715646422, 0.029297928606, -0.029891280351, 0.030495960269,
+      -0.031112233682, 0.031740377067, -0.032380675289, 0.033033425105, -0.033698936891,
+      0.034377533547, -0.035069554322, 0.035775348710, -0.036495285507, 0.037229732310,
+      -0.037979087851, 0.038743749150, -0.039524148180, 0.040320737342, -0.041133986518,
+      0.041964390263, -0.042812456663, 0.043678702474, -0.044563673627, 0.045467961416,
+      -0.046392201827, 0.047337052727, -0.048303158005, 0.049291168807, -0.050301865334,
+      0.051336162434, -0.052394612322, 0.053478306635, -0.054588037999, 0.055724798156,
+      -0.056889588450, 0.058083473436, -0.059307577544, 0.060563089366, -0.061851263338,
+      0.063173427716, -0.064530993089, 0.065925451887, -0.067358387893, 0.068831485142,
+      -0.070346532543, 0.071905432603, -0.073510217159, 0.075163043515, -0.076866221732,
+      0.078622213297, -0.080433655641, 0.082303370668, -0.084234385688, 0.086229947754,
+      -0.088293546340, 0.090428936788, -0.092640164280, 0.094931596141, -0.097307948658,
+      0.099774328270, -0.102336263000, 0.104999760466, -0.107771346705, 0.110658136074,
+      -0.113667891145, 0.116809097747, -0.120091053324, 0.123523965706, -0.127119063887,
+      0.130888734251, -0.134846668350, 0.139008036349, -0.143389695458, 0.148010428944,
+      -0.152891234646, 0.158055621949, -0.163530113154, 0.169344476033, -0.175532661190,
+      0.182133087270, -0.189189679503, 0.196752872475, -0.204880757381, 0.213640595834,
+      -0.223110732231, 0.233382953017, -0.244565451601, 0.256786611618, -0.270199886408,
+      0.284990171234, -0.301382174551, 0.319651524822, -0.340139763175, 0.363274854067,
+      -0.389599543691, 0.419811378014, -0.454819792210, 0.495829045390, -0.544460200350,
+      0.602932266499, -0.674330493100, 0.762991030732, -0.874986539964, 1.018432099887,
+      -1.202052695478, 1.424368368342, -1.615622176253, 1.343725381358, 1.343725381358,
+      -1.615622176253, 1.424368368342, -1.202052695478, 1.018432099887, -0.874986539964,
+      0.762991030732, -0.674330493100, 0.602932266499, -0.544460200350, 0.495829045390,
+      -0.454819792210, 0.419811378014, -0.389599543691, 0.363274854067, -0.340139763175,
+      0.319651524822, -0.301382174551, 0.284990171234, -0.270199886408, 0.256786611618,
+      -0.244565451601, 0.233382953017, -0.223110732231, 0.213640595834, -0.204880757381,
+      0.196752872475, -0.189189679503, 0.182133087270, -0.175532661190, 0.169344476033,
+      -0.163530113154, 0.158055621949, -0.152891234646, 0.148010428944, -0.143389695458,
+      0.139008036349, -0.134846668350, 0.130888734251, -0.127119063887, 0.123523965706,
+      -0.120091053324, 0.116809097747, -0.113667891145, 0.110658136074, -0.107771346705,
+      0.104999760466, -0.102336263000, 0.099774328270, -0.097307948658, 0.094931596141,
+      -0.092640164280, 0.090428936788, -0.088293546340, 0.086229947754, -0.084234385688,
+      0.082303370668, -0.080433655641, 0.078622213297, -0.076866221732, 0.075163043515,
+      -0.073510217159, 0.071905432603, -0.070346532543, 0.068831485142, -0.067358387893,
+      0.065925451887, -0.064530993089, 0.063173427716, -0.061851263338, 0.060563089366,
+      -0.059307577544, 0.058083473436, -0.056889588450, 0.055724798156, -0.054588037999,
+      0.053478306635, -0.052394612322, 0.051336162434, -0.050301865334, 0.049291168807,
+      -0.048303158005, 0.047337052727, -0.046392201827, 0.045467961416, -0.044563673627,
+      0.043678702474, -0.042812456663, 0.041964390263, -0.041133986518, 0.040320737342,
+      -0.039524148180, 0.038743749150, -0.037979087851, 0.037229732310, -0.036495285507,
+      0.035775348710, -0.035069554322, 0.034377533547, -0.033698936891, 0.033033425105,
+      -0.032380675289, 0.031740377067, -0.031112233682, 0.030495960269, -0.029891280351,
+      0.029297928606, -0.028715646422, 0.028144185176, -0.027583302645, 0.027032768362,
+      -0.026492356476, 0.025961852241, -0.025441045646, 0.024929734343, -0.024427722029,
+      0.023934820944, -0.023450847862, 0.022975626811, -0.022508985151, 0.022050752622,
+      -0.021600764631, 0.021158860608, -0.020724890508, 0.020298700759, -0.019880161002,
+      0.019469113392, -0.019065434904, 0.018668981115, -0.018279622730, 0.017897245649,
+      -0.017521725210, 0.017152932435, -0.016790748204, 0.016435061368, -0.016085765838,
+      0.015742752141, -0.015405902385, 0.015075112991, -0.014750303007, 0.014431364261,
+      -0.014118168124, 0.013810681220, -0.013508755133, 0.013212332134, -0.012921307124,
+      0.012635598299, -0.012355120008, 0.012079788179, -0.011809518412, 0.011544230106,
+      -0.011283845610, 0.011028286872, -0.010777479194, 0.010531347436, -0.010289816845,
+      0.010052815028, -0.009820272961, 0.009592119185, -0.009368288471, 0.009148710425,
+      -0.008933319707, 0.008722049468, -0.008514836958, 0.008311618786, -0.008112333834,
+      0.007916920630, -0.007725317598, 0.007537465733, -0.007353305467, 0.007172781223,
+      -0.006995833709, 0.006822411334, -0.006652453639, 0.006485910732, -0.006322727145,
+      0.006162849817, -0.006006228231, 0.005852809600, -0.005702541972, 0.005555377653,
+      -0.005411266138, 0.005270156596, -0.005132001194, 0.004996752688, -0.004864364084,
+      0.004734784003, -0.004608044835, 0.004483723159, -0.004362665764, 0.004243770692,
+      -0.004127461044, 0.004013833784, -0.003902780174, 0.003794173073, -0.003687936658,
+      0.003584041643, -0.003482479159, 0.003383233823, -0.003286272943, 0.003191555178,
+      -0.003099031904, 0.003008649713, -0.002920363984, 0.002834138862, -0.002749934079,
+      0.002667726157, -0.002587478603, 0.002509164415, -0.002432749342, 0.002358200535,
+      -0.002285481842, 0.002214557806, -0.002145392318, 0.002077949490, -0.002012195988,
+      0.001948097744, -0.001885623961, 0.001824743557, -0.001765429547, 0.001707652260,
+      -0.001651385820, 0.001596600113, -0.001543265948, 0.001491353537, -0.001440834188,
+      0.001391678920, -0.001343861051, 0.001297351425, -0.001252120873, 0.001208141683,
+      -0.001165386493, 0.001123831678, -0.001083451076, 0.001044228783, -0.001006124024,
+      0.000969132891, -0.000933209570, 0.000898346618, -0.000864524888, 0.000831710093,
+      -0.000799879898, 0.000769017578, -0.000739100882, 0.000710106410, -0.000682009867,
+      0.000654789012, -0.000628429716, 0.000602911519, -0.000578200926, 0.000554284844,
+      -0.000531162622, 0.000508779123, -0.000487148092, 0.000466230156, -0.000446020258,
+      0.000426497302, -0.000407643761, 0.000389441103, -0.000371873556, 0.000354925219,
+      -0.000338579892, 0.000322822614, -0.000307635613, 0.000293002557, -0.000278908335,
+      0.000265338906, -0.000252279201, 0.000239717132, -0.000227635589, 0.000216021912,
+      -0.000204860855, 0.000194140539, -0.000183847610, 0.000173970649, -0.000164496496,
+      0.000155412681, -0.000146707831, 0.000138369816, -0.000130388780, 0.000122752228,
+      -0.000115452479, 0.000108473888, -0.000101811908, 0.000095450865, -0.000089382883,
+      0.000083598110, -0.000078084681, 0.000072835122, -0.000067841979, 0.000063093698,
+      -0.000058581637, 0.000054298192, -0.000050233909, 0.000046380231, -0.000042729681,
+      0.000039274933, -0.000036008008, 0.000197695583]'
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [576, 292.0]
+    rotation: 0
+    state: enabled
+- name: freq_xlating_fir_filter_xxx_0
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: 20e3
+    comment: ''
+    decim: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    taps: '1'
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 292.0]
+    rotation: 0
+    state: disabled
+- name: low_pass_filter_0
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: 6.25e3
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fir_filter_ccf
+    width: 6.25e3
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 268.0]
+    rotation: 0
+    state: disabled
+- name: qtgui_const_sink_x_0
+  id: qtgui_const_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: '"blue"'
+    color10: '"red"'
+    color2: '"red"'
+    color3: '"red"'
+    color4: '"red"'
+    color5: '"red"'
+    color6: '"red"'
+    color7: '"red"'
+    color8: '"red"'
+    color9: '"red"'
+    comment: ''
+    grid: 'True'
+    gui_hint: ''
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    marker1: '0'
+    marker10: '0'
+    marker2: '0'
+    marker3: '0'
+    marker4: '0'
+    marker5: '0'
+    marker6: '0'
+    marker7: '0'
+    marker8: '0'
+    marker9: '0'
+    name: '""'
+    nconnections: '1'
+    size: '1024'
+    style1: '0'
+    style10: '0'
+    style2: '0'
+    style3: '0'
+    style4: '0'
+    style5: '0'
+    style6: '0'
+    style7: '0'
+    style8: '0'
+    style9: '0'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    xmax: '0.0025'
+    xmin: '-0.0025'
+    ymax: '0.0025'
+    ymin: '-0.0025'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 44.0]
+    rotation: 0
+    state: disabled
+- name: qtgui_eye_sink_x_0
+  id: qtgui_eye_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: blue
+    color2: blue
+    color3: blue
+    color4: blue
+    color5: blue
+    color6: blue
+    color7: blue
+    color8: blue
+    color9: blue
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    nconnections: '1'
+    samp_per_symbol: '10'
+    size: '16000'
+    srate: '48000'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '5'
+    ymin: '-5'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2056, 244.0]
+    rotation: 0
+    state: disabled
+- name: qtgui_freq_sink_x_0
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.2'
+    axislabels: 'True'
+    bw: samp_rate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    ctrlpanel: 'False'
+    fc: freq
+    fftsize: '2048'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: ''
+    label: Relative Gain
+    label1: ''
+    label10: ''''''
+    label2: ''''''
+    label3: ''''''
+    label4: ''''''
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    legend: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '""'
+    nconnections: '1'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '-20'
+    ymin: '-100'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 108.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_time_sink_x_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'False'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '1024'
+    srate: '48000'
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '5'
+    ymin: '-5'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1568, 188.0]
+    rotation: 0
+    state: disabled
+- name: qtgui_waterfall_sink_x_0
+  id: qtgui_waterfall_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    axislabels: 'True'
+    bw: samp_rate
+    color1: '0'
+    color10: '0'
+    color2: '0'
+    color3: '0'
+    color4: '0'
+    color5: '0'
+    color6: '0'
+    color7: '0'
+    color8: '0'
+    color9: '0'
+    comment: ''
+    fc: freq
+    fftsize: '4096'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: ''
+    int_max: '-20'
+    int_min: '-100'
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '""'
+    nconnections: '1'
+    showports: 'False'
+    type: complex
+    update_time: '0.10'
+    wintype: window.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 188.0]
+    rotation: 0
+    state: enabled
+- name: rational_resampler_xxx_0
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: '125'
+    fbw: '0'
+    interp: '48'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: '[]'
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1224, 292.0]
+    rotation: 0
+    state: disabled
+- name: root_raised_cosine_filter_0
+  id: root_raised_cosine_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: '0.5'
+    comment: ''
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ntaps: 8*10+1
+    samp_rate: '10'
+    sym_rate: '1'
+    type: fir_filter_fff
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1568, 276.0]
+    rotation: 0
+    state: disabled
+- name: zeromq_sub_source_0
+  id: zeromq_sub_source
+  parameters:
+    address: '"tcp://:"+rru_addr+"17017"'
+    affinity: ''
+    alias: ''
+    bind: 'False'
+    comment: ''
+    hwm: '-1'
+    key: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pass_tags: 'False'
+    timeout: '10'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 252.0]
+    rotation: 0
+    state: disabled
+- name: zeromq_sub_source_0_0
+  id: zeromq_sub_source
+  parameters:
+    address: '"tcp://:"+rru_addr+"17017"'
+    affinity: ''
+    alias: ''
+    bind: 'False'
+    comment: ''
+    hwm: '-1'
+    key: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pass_tags: 'False'
+    timeout: '10'
+    type: short
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [16, 484.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [analog_quadrature_demod_cf_0, '0', qtgui_time_sink_x_0, '0']
+- [analog_quadrature_demod_cf_0, '0', root_raised_cosine_filter_0, '0']
+- [blocks_complex_to_float_0, '0', blocks_wavfile_sink_0, '0']
+- [blocks_complex_to_float_0, '1', blocks_wavfile_sink_0, '1']
+- [blocks_interleaved_short_to_complex_0, '0', blocks_moving_average_xx_0, '0']
+- [blocks_interleaved_short_to_complex_0, '0', blocks_sub_xx_0, '0']
+- [blocks_moving_average_xx_0, '0', blocks_sub_xx_0, '1']
+- [blocks_sub_xx_0, '0', fir_filter_xxx_0, '0']
+- [digital_symbol_sync_xx_0_0, '0', qtgui_eye_sink_x_0, '0']
+- [fir_filter_xxx_0, '0', freq_xlating_fir_filter_xxx_0, '0']
+- [fir_filter_xxx_0, '0', qtgui_const_sink_x_0, '0']
+- [fir_filter_xxx_0, '0', qtgui_freq_sink_x_0, '0']
+- [fir_filter_xxx_0, '0', qtgui_waterfall_sink_x_0, '0']
+- [freq_xlating_fir_filter_xxx_0, '0', low_pass_filter_0, '0']
+- [low_pass_filter_0, '0', rational_resampler_xxx_0, '0']
+- [rational_resampler_xxx_0, '0', analog_quadrature_demod_cf_0, '0']
+- [root_raised_cosine_filter_0, '0', digital_symbol_sync_xx_0_0, '0']
+- [zeromq_sub_source_0, '0', blocks_complex_to_float_0, '0']
+- [zeromq_sub_source_0, '0', blocks_moving_average_xx_0, '0']
+- [zeromq_sub_source_0, '0', blocks_sub_xx_0, '0']
+- [zeromq_sub_source_0_0, '0', blocks_interleaved_short_to_complex_0, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.7.0
