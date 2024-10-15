@@ -3,10 +3,10 @@
 Wojciech Kaczmarski, SP5WWP<br>
 M17 Project, 2024
 
-### Protocol revision
+## Protocol revision
 The protocol described in this document is **CARI 1.1**.
 
-### Abbreviations used in this document
+## Abbreviations used in this document
 BB   - Baseband<br>
 BBU  - Baseband Unit<br>
 CARI - Common Amateur Radio Interface<br>
@@ -23,7 +23,7 @@ SUB  - Subscriber (ZeroMQ node type)<br>
 UL   - Uplink<br>
 ZMQ  - ZeroMQ<br>
 
-### Introduction
+## Introduction
 CARI protocol is supposed to mimic professionally used *Common Public Radio Interface* (CPRI)
 and offer a part of its functionality.
 The protocol allows for basic data, control and supervision plane access, letting the user directly control
@@ -41,6 +41,10 @@ Devices can be either masters or slaves, role mixing is not possible (one role p
 Transmitters and receivers within a single slave device are called *subdevices*.
 There can be a maximum of 256 subdevices per device.
 
+![Device structure](../gfx/Device_structure.png)
+
+**Figure 1** - Device structure
+
 ### Basic topology
 The interface assumes there are at least two devices connected over some physical medium:
 * at least one master
@@ -49,6 +53,10 @@ The interface assumes there are at least two devices connected over some physica
 The connection between two or more devices is called a *network*.
 A single network can consists of multiple masters and slaves.
 Since there is no device addressing, the physical layer must be able to provide it.
+
+![Basic master-slave transaction](../gfx/Master-slave.png)
+
+**Figure 2** - Basic master-slave transaction
 
 ### Data flow and the Control Planes
 There are 4 paths for the data flow, called *planes*:
@@ -81,6 +89,8 @@ The slave device offers telemetry data over its ZMQ PUB instance.<br>
 In the example below, the Baseband Unit (BBU) acts as a master over the Remote Radio Unit (RRU).
 
 ![CARI example](../gfx/CARI.png)
+
+**Figure 3** - Example master-slave connection
 
 ### Command-reply
 A *command* is a sequence of bytes sent by the master device, executing a particular action
@@ -191,6 +201,8 @@ This field holds supported CARI protocol version as `(major<<4)|minor`.
 **Table 9** - Capabilities (device)
 
 ### Subdevice's capabilities
+Most capabilities are explicit - if its ID appears in the list - it is supported:
+
 | Capability ID | Meaning                                      |
 |---------------|----------------------------------------------|
 | 0x00          | I/Q modulation available                     |
@@ -211,14 +223,21 @@ This field holds supported CARI protocol version as `(major<<4)|minor`.
 | 0x0D          | Phase modulator available                    |
 | 0x0E          | Single-sideband demodulator available        |
 | 0x0F .. 0x7F  | Reserved                                     |
-|               |                                              |
-| 0x80          | Power                                        |
-| 0x81          | Frequency                                    |
-| 0x82          | LNA gain                                     |
-| 0x83          | Sample rate                                  |
-| 0x84 .. 0xFF  | Reserved                                     |
 
-**Table 10** - Capabilities (subdevice)
+**Table 10a** - Capabilities (subdevice)
+
+Some capabilities can represent a range:
+
+| Capability ID | Meaning          | Unit         | Size (bytes)   |
+|---------------|------------------|--------------|----------------|
+| 0x80          | Frequency        | Hz           | 8 (unsigned)   |
+| 0x81          | LNA gain         | dB           | 4 (float)      |
+| 0x82          | Power            | dBm          | 4 (float)      |
+| 0x83          | Channel width    | Hz           | 4 (float)      |
+| 0x84          | Sample rate      | Hz           | 4 (float)      |
+| 0x85 .. 0xFF  | Reserved         | -            | -              |
+
+**Table 10b** - Capabilities (subdevice)
 
 #### Expressing value ranges
 Capabilities with addresses greater than or equal 0x80 can be used to represent a certain range.
@@ -266,3 +285,10 @@ Data packets are transmitted repeatedly.
 | 0x05     | RF power (reflected, average)    | 4 (float)      | dBm         | The value has to be prepended with a subdevice address |
 
 **Table 12** - Supervision plane - supported quantities
+
+## Basic setup
+Basic subdevice setup is shown in *Figure 3*.
+
+![Basic setup](../gfx/Basic_config.png)
+
+**Figure 4** - Basic subdevice setup
