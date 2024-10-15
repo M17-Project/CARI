@@ -114,17 +114,20 @@ The reply for a command uses the same value in its ID field.
 Byte count is little-endian and includes **all** bytes in the sequence.
 
 ### Command list
-| CID     | Byte count | Action                                | Address    | Parameters                         | Return value               | Total length |
-|---------|------------|---------------------------------------|------------|------------------------------------|----------------------------|--------------|
-| 0x00    | 3          | Ping/pong                             | -          | -                                  | 32-bit value (error flags) | 7            |
-| 0x01    | 5          | Set device's register value           | register   | 8-bit value                        | 0/1                        | 4            |
-| 0x02    | varies     | Set subdevice's parameter             | subdevice  | 8-bit parameter ID, value (varies) | 0/1                        | 4            |
-| 0x03    | 5          | Execute subdevice's action            | subdevice  | 8-bit action ID                    | 0/1                        | 4            |
-| 0x04    | varies     | ZMQ-SUB connect to publisher          | -          | master's address as a string*      | 0/1                        | 4            |
+| CID     | Byte count | Action                                | Address    | Parameters                             | Return value               | Total length |
+|---------|------------|---------------------------------------|------------|----------------------------------------|----------------------------|--------------|
+| 0x00    | 3          | Ping/pong                             | -          | -                                      | 32-bit value (error flags) | 7            |
+| 0x01    | 5          | Set device's register value           | register   | 8-bit value                            | 0/1                        | 4            |
+| 0x02    | varies     | Set subdevice's parameter             | subdevice  | 8-bit parameter ID, value (varies)     | 0/1                        | 4            |
+| 0x03    | 5          | Execute subdevice's action            | subdevice  | 8-bit action ID                        | 0/1                        | 4            |
+| 0x04    | varies     | SUB connect to BB UL PUB              | subdevice  | master's address as a string*          | 0/1                        | 4            |
+| 0x05    | 6          | Initiate BB DL PUB stream             | subdevice  | 16-bit port number                     | 0/1                        | 4            |
+| 0x06    | varies     | Initiate Supervision PUB stream       | subdevice  | 16-bit port number, parameters list**  | 0/1                        | 4            |
 
 **Table 4** - *WRITE* command list
 
-\*The string does not have to be null-terminated
+\*The string does not have to be null-terminated (eg. "tcp://192.168.0.69:1337").<br>
+\**Data transfer ceases when the parameters list is empty.
 
 | CID     | Byte count | Action                                | Address    | Parameters           | Return value                   | Total length |
 |---------|------------|---------------------------------------|------------|----------------------|--------------------------------|--------------|
@@ -132,6 +135,7 @@ Byte count is little-endian and includes **all** bytes in the sequence.
 | 0x81    | 4          | Get register value                    | register   | -                    | 8-bit value                    | varies       |
 | 0x82    | 4          | Get subdevice capabilities list       | subdevice  | -                    | list of capabilities           | varies       |
 | 0x83    | 5          | Get subdevice parameter               | subdevice  | 8-bit parameter ID   | value of a selected parameter  | varies       |
+| 0x84    | 4          | Get Supervision parameters list       | -          | -                    | list of supported quantities   | varies       |
 
 **Table 5** - *READ* command list
 
@@ -225,6 +229,7 @@ two consecutive capability ID-value pairs should be transmitted:
 
 ### Subdevice parameters
 Parameters are used to configure subdevices.
+
 | Parameter ID  | Meaning                                      | Size (bytes)   | Unit     |
 |---------------|----------------------------------------------|----------------|----------|
 | 0x00          | Frequency                                    | 8 (unsigned)   | Hz       |
@@ -244,3 +249,20 @@ Parameters are used to configure subdevices.
 | 0x02 .. 0xFF  | Reserved                                 |
 
 **Table 12** - Subdevice actions
+
+### Supervision plane - data format
+The data published over the Supervision Plane is grouped into packets:<br>
+`Quantity ID | Value | Quantity ID | Value | ...`<br>
+Data packets are transmitted repeatedly.
+
+#### Quantities
+| ID       | Quantity                         | Size (bytes)   | Unit        | Remarks                                                |
+|----------|----------------------------------|----------------|-------------|--------------------------------------------------------|
+| 0x00     | Temperature                      | 4 (float)      | deg. C      | Measured at the RF unit?                               |
+| 0x01     | Voltage                          | 4 (float)      | V           | Measured at the RF unit?                               |
+| 0x02     | Current                          | 4 (float)      | A           | Total current draw by the device, DC side              |
+| 0x03     | Return Loss                      | 4 (float)      | dB          | The value has to be prepended with a subdevice address |
+| 0x04     | RF power (incident, average)     | 4 (float)      | dBm         | The value has to be prepended with a subdevice address |
+| 0x05     | RF power (reflected, average)    | 4 (float)      | dBm         | The value has to be prepended with a subdevice address |
+
+**Table 12** - Supervision plane - supported quantities
