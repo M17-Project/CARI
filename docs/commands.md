@@ -239,7 +239,8 @@ Parameters are used to configure subdevices.
 ### Subdevice actions
 | Action ID     | Action                                   |
 |---------------|------------------------------------------|
-| 0x00          | Reception start (activate baseband DL)   |
-| 0x01 .. 0xFF  | Reserved                                 |
+| 0x00          | Reception start (initiate baseband DL)   |
+| 0x01          | Reception stop (stop baseband DL)        |
+| 0x02 .. 0xFF  | Reserved                                 |
 
 **Table 12** - Subdevice actions
