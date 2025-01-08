@@ -1,11 +1,11 @@
 options:
   parameters:
-    author: SP5WWP
+    author: Wojciech Kaczmarski, SP5WWP
     catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
-    copyright: M17 Project 2024
+    copyright: M17 Foundation 2025
     description: ''
     gen_cmake: 'On'
     gen_linking: dynamic
@@ -41,6 +41,7 @@ blocks:
     cutoff_freq: 6.25e3
     gain: '1.0'
     samp_rate: samp_rate
+    value: ''
     width: 6.25e3
     win: window.WIN_HAMMING
   states:
@@ -469,3 +470,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.10.0
