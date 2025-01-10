@@ -1,7 +1,7 @@
 # Common Amateur Radio Interface (CARI)
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
-M17 Project, 2024
+M17 Foundation, 2025
 
 ## Protocol revision
 The protocol described in this document is **CARI 1.1**.
@@ -106,13 +106,13 @@ Subdevices can be accessed independently and are addressed using a single byte.
 
 **Table 1** - Simple command/reply with no addressing or parameters (eg. *ping/pong*)
 
-| CID        | Byte count | Params           |
+| CID        | Byte count | Parameters       |
 |------------|------------|------------------|
 | 1 byte     | 2 bytes    | 0 .. 65532 bytes |
 
 **Table 2** - Command/reply with a parameter
 
-| CID        | Byte count | Address* | Params           |
+| CID        | Byte count | Address* | Parameters       |
 |------------|------------|----------|------------------|
 | 1 byte     | 2 bytes    | 1 byte   | 0 .. 65531 bytes |
 
@@ -124,28 +124,28 @@ The reply for a command uses the same value in its ID field.
 Byte count is little-endian and includes **all** bytes in the sequence.
 
 ### Command list
-| CID     | Byte count | Action                                | Address    | Parameters                             | Return value               | Total length |
-|---------|------------|---------------------------------------|------------|----------------------------------------|----------------------------|--------------|
-| 0x00    | 3          | Ping/pong                             | -          | -                                      | 32-bit value (error flags) | 7            |
-| 0x01    | 5          | Set device's register value           | register   | 8-bit value                            | 0/1                        | 4            |
-| 0x02    | varies     | Set subdevice's parameter             | subdevice  | 8-bit parameter ID, value (varies)     | 0/1                        | 4            |
-| 0x03    | 5          | Execute subdevice's action            | subdevice  | 8-bit action ID                        | 0/1                        | 4            |
-| 0x04    | varies     | SUB connect to BB UL PUB              | subdevice  | master's address as a string*          | 0/1                        | 4            |
-| 0x05    | 6          | Initiate BB DL PUB stream             | subdevice  | 16-bit port number                     | 0/1                        | 4            |
-| 0x06    | varies     | Initiate Supervision PUB stream       | subdevice  | 16-bit port number, parameters list**  | 0/1                        | 4            |
+| CID     | Byte count | Action                                | Address    | Parameters                             | Return value               | Reply byte count |
+|---------|------------|---------------------------------------|------------|----------------------------------------|----------------------------|------------------|
+| 0x00    | 3          | Ping/pong                             | -          | -                                      | 32-bit value (error flags) | 7                |
+| 0x01    | 5          | Set device's register value           | register   | 8-bit value                            | 0/1                        | 4                |
+| 0x02    | varies     | Set subdevice's parameter             | subdevice  | 8-bit parameter ID, value (varies)     | 0/1                        | 4                |
+| 0x03    | 5          | Execute subdevice's action            | subdevice  | 8-bit action ID                        | 0/1                        | 4                |
+| 0x04    | varies     | SUB connect to BB UL PUB              | subdevice  | master's address as a string*          | 0/1                        | 4                |
+| 0x05    | 6          | Initiate BB DL PUB stream             | subdevice  | 16-bit port number                     | 0/1                        | 4                |
+| 0x06    | varies     | Initiate Supervision PUB stream       | subdevice  | 16-bit port number, parameters list**  | 0/1                        | 4                |
 
 **Table 4** - *WRITE* command list
 
 \*The string does not have to be null-terminated (eg. "tcp://192.168.0.69:1337").<br>
 \**Data transfer ceases when the parameters list is empty.
 
-| CID     | Byte count | Action                                | Address    | Parameters           | Return value                   | Total length |
-|---------|------------|---------------------------------------|------------|----------------------|--------------------------------|--------------|
-| 0x80    | 3          | Get *IDENT* string                    | -          | -                    | *IDENT* string                 | varies       |
-| 0x81    | 4          | Get register value                    | register   | -                    | 8-bit value                    | varies       |
-| 0x82    | 4          | Get subdevice capabilities list       | subdevice  | -                    | list of capabilities           | varies       |
-| 0x83    | 5          | Get subdevice parameter               | subdevice  | 8-bit parameter ID   | value of a selected parameter  | varies       |
-| 0x84    | 4          | Get Supervision parameters list       | -          | -                    | list of supported quantities   | varies       |
+| CID     | Byte count | Action                                | Address    | Parameters           | Return value                   | Reply byte count |
+|---------|------------|---------------------------------------|------------|----------------------|--------------------------------|------------------|
+| 0x80    | 3          | Get *IDENT* string                    | -          | -                    | *IDENT* string                 | varies           |
+| 0x81    | 4          | Get register value                    | register   | -                    | 8-bit value                    | varies           |
+| 0x82    | 4          | Get subdevice capabilities list       | subdevice  | -                    | list of capabilities           | varies           |
+| 0x83    | 5          | Get subdevice parameter               | subdevice  | 8-bit parameter ID   | value of a selected parameter  | varies           |
+| 0x84    | 4          | Get Supervision parameters list       | -          | -                    | list of supported quantities   | varies           |
 
 **Table 5** - *READ* command list
 
