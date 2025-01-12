@@ -142,7 +142,7 @@ Byte count is little-endian and includes **all** bytes in the sequence.
 | CID     | Byte count | Action                                | Address    | Parameters           | Return value                   | Reply byte count |
 |---------|------------|---------------------------------------|------------|----------------------|--------------------------------|------------------|
 | 0x80    | 3          | Get *IDENT* string                    | -          | -                    | *IDENT* string                 | varies           |
-| 0x81    | 4          | Get register value                    | register   | -                    | 8-bit value                    | varies           |
+| 0x81    | 4          | Get register value                    | register   | -                    | 8-bit value                    | 4                |
 | 0x82    | 4          | Get subdevice capabilities list       | subdevice  | -                    | list of capabilities           | varies           |
 | 0x83    | 5          | Get subdevice parameter               | subdevice  | 8-bit parameter ID   | value of a selected parameter  | varies           |
 | 0x84    | 4          | Get Supervision parameters list       | -          | -                    | list of supported quantities   | varies           |
