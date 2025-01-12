@@ -99,22 +99,22 @@ A *reply* is a similar sequence sent back by the controlled device as an acknowl
 Replies may contain return values for error signalling.<br>
 Subdevices can be accessed independently and are addressed using a single byte.
 
-#### Byte format
-| CID        | Byte count |
-|------------|------------|
-| 1 byte     | 2 bytes    |
+#### Command format
+| CID        | Byte count field |
+|------------|------------------|
+| 1 byte     | 2 bytes          |
 
 **Table 1** - Simple command/reply with no addressing or parameters (eg. *ping/pong*)
 
-| CID        | Byte count | Parameters       |
-|------------|------------|------------------|
-| 1 byte     | 2 bytes    | 0 .. 65532 bytes |
+| CID        | Byte count field | Parameters       |
+|------------|------------------|------------------|
+| 1 byte     | 2 bytes          | 0 .. 65532 bytes |
 
 **Table 2** - Command/reply with a parameter
 
-| CID        | Byte count | Address* | Parameters       |
-|------------|------------|----------|------------------|
-| 1 byte     | 2 bytes    | 1 byte   | 0 .. 65531 bytes |
+| CID        | Byte count field | Address* | Parameters       |
+|------------|------------------|----------|------------------|
+| 1 byte     | 2 bytes          | 1 byte   | 0 .. 65531 bytes |
 
 **Table 3** - Command/reply with addressing and parameters
 
