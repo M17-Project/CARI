@@ -143,7 +143,7 @@ blocks:
     minoutbuf: '0'
     scale_factor: '0x8000'
     swap: 'False'
-    vector_input: 'False'
+    vector_input: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -196,18 +196,18 @@ blocks:
     alias: ''
     comment: ''
     ignoretag: 'True'
-    limit: auto
-    maximum: '0.1'
+    limit: items
+    maximum: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
     samples_per_second: samp_rate
     type: short
-    vlen: '1'
+    vlen: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 404.0]
+    coordinate: [368, 388.0]
     rotation: 0
     state: enabled
 - name: blocks_vector_to_stream_0
@@ -218,14 +218,14 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_items: '2500'
+    num_items: '1250'
     type: short
-    vlen: '1'
+    vlen: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [216, 416.0]
+    coordinate: [216, 404.0]
     rotation: 0
     state: enabled
 - name: blocks_wavfile_sink_0
@@ -663,7 +663,7 @@ blocks:
     alpha8: '1.0'
     alpha9: '1.0'
     autoscale: 'False'
-    average: '0.2'
+    average: '1.0'
     axislabels: 'True'
     bw: samp_rate
     color1: '"blue"'
@@ -718,7 +718,7 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    wintype: window.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_HAMMING
     ymax: '-20'
     ymin: '-100'
   states:
