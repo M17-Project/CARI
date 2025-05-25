@@ -1,10 +1,11 @@
 # Common Amateur Radio Interface (CARI)
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
-M17 Foundation, 2025
+M17 Foundation
+25 May 2025
 
 ## Protocol revision
-The protocol described in this document is **CARI 1.1**.
+The protocol described in this document is **CARI 1.2**.
 
 ## Abbreviations used in this document
 BB   - Baseband<br>
@@ -127,17 +128,19 @@ Byte count is little-endian and includes **all** bytes in the sequence.
 | CID     | Byte count | Action                                | Address    | Parameters                             | Return value               | Reply byte count |
 |---------|------------|---------------------------------------|------------|----------------------------------------|----------------------------|------------------|
 | 0x00    | 3          | Ping/pong                             | -          | -                                      | 32-bit value (error flags) | 7                |
-| 0x01    | 5          | Set device's register value           | register   | 8-bit value                            | 0/1                        | 4                |
+| 0x01    | 5          | Set device's register value*          | register   | 8-bit value                            | 0/1                        | 4                |
 | 0x02    | varies     | Set subdevice's parameter             | subdevice  | 8-bit parameter ID, value (varies)     | 0/1                        | 4                |
 | 0x03    | 5          | Execute subdevice's action            | subdevice  | 8-bit action ID                        | 0/1                        | 4                |
-| 0x04    | varies     | SUB connect to BB UL PUB              | subdevice  | master's address as a string*          | 0/1                        | 4                |
+| 0x04    | varies     | SUB connect to BB UL PUB              | subdevice  | master's address as a string**         | 0/1                        | 4                |
 | 0x05    | 6          | Initiate BB DL PUB stream             | subdevice  | 16-bit port number                     | 0/1                        | 4                |
-| 0x06    | varies     | Initiate Supervision PUB stream       | subdevice  | 16-bit port number, parameters list**  | 0/1                        | 4                |
+| 0x06    | varies     | Initiate Supervision PUB stream       | subdevice  | 16-bit port number, parameters list*** | 0/1                        | 4                |
 
 **Table 4** - *WRITE* command list
 
-\*The string does not have to be null-terminated (eg. "tcp://192.168.0.69:1337").<br>
-\**Data transfer ceases when the parameters list is empty.
+\*Writing any value to register 0x00 using CID=0x01 shall initiate device's reset.<br>
+\**The string does not have to be null-terminated (eg. "tcp://192.168.0.69:1337").<br>
+\***Data transfer ceases when the parameters list is empty.
+
 
 | CID     | Byte count | Action                                | Address    | Parameters           | Return value                   | Reply byte count |
 |---------|------------|---------------------------------------|------------|----------------------|--------------------------------|------------------|
@@ -221,7 +224,7 @@ Most capabilities are explicit - if its ID appears in the list - it is supported
 | 0x0B          | Amplitude modulator avaialble                |
 | 0x0C          | Frequency modulator available                |
 | 0x0D          | Phase modulator available                    |
-| 0x0E          | Single-sideband demodulator available        |
+| 0x0E          | Single-sideband modulator available          |
 | 0x0F .. 0x7F  | Reserved                                     |
 
 **Table 10a** - Capabilities (subdevice)
@@ -263,9 +266,10 @@ Parameters are used to configure subdevices.
 ### Subdevice actions
 | Action ID     | Action                                   |
 |---------------|------------------------------------------|
-| 0x00          | Reception start (initiate baseband DL)   |
-| 0x01          | Reception stop (stop baseband DL)        |
-| 0x02 .. 0xFF  | Reserved                                 |
+| 0x00          | Subdevice reset                          |
+| 0x01          | Reception start (initiate baseband DL)   |
+| 0x02          | Reception stop (stop baseband DL)        |
+| 0x03 .. 0xFF  | Reserved                                 |
 
 **Table 12** - Subdevice actions
 
