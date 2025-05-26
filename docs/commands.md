@@ -1,7 +1,7 @@
 # Common Amateur Radio Interface (CARI)
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
-M17 Foundation
+M17 Foundation<br>
 26 May 2025
 
 ## Protocol revision
