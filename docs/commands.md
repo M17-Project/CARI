@@ -2,10 +2,10 @@
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
 M17 Foundation
-25 May 2025
+26 May 2025
 
 ## Protocol revision
-The protocol described in this document is **CARI 1.2**.
+The protocol described in this document is **CARI 1.3**.
 
 ## Abbreviations used in this document
 BB   - Baseband<br>
@@ -208,37 +208,39 @@ Most capabilities are explicit - if its ID appears in the list - it is supported
 
 | Capability ID | Meaning                                      |
 |---------------|----------------------------------------------|
-| 0x00          | I/Q modulation available                     |
-| 0x01          | Receiver                                     |
-| 0x02          | Transmitter                                  |
-| 0x03          | Full duplex available                        |
-| 0x04          | Automatic Gain Control available             |
-| 0x05          | Automatic Frequency Control available        |
-| 0x06          | Frequency reference available                |
+| 0x00          | Subdevice can be reset                       |
+| 0x01          | I/Q modulation available                     |
+| 0x02          | Receiver                                     |
+| 0x03          | Transmitter                                  |
+| 0x04          | Full duplex available                        |
+| 0x05          | Automatic Gain Control available             |
+| 0x06          | Automatic Frequency Control available        |
+| 0x07          | Frequency reference available                |
 |               |                                              |
-| 0x07          | Amplitude demodulator avaialble              |
-| 0x08          | Frequency demodulator available              |
-| 0x09          | Phase demodulator available                  |
-| 0x0A          | Single-sideband demodulator available        |
+| 0x08          | Amplitude demodulator avaialble              |
+| 0x09          | Frequency demodulator available              |
+| 0x0A          | Phase demodulator available                  |
+| 0x0B          | Single-sideband demodulator available        |
 |               |                                              |
-| 0x0B          | Amplitude modulator avaialble                |
-| 0x0C          | Frequency modulator available                |
-| 0x0D          | Phase modulator available                    |
-| 0x0E          | Single-sideband modulator available          |
-| 0x0F .. 0x7F  | Reserved                                     |
+| 0x0C          | Amplitude modulator avaialble                |
+| 0x0D          | Frequency modulator available                |
+| 0x0E          | Phase modulator available                    |
+| 0x0F          | Single-sideband modulator available          |
+| 0x10 .. 0x7F  | Reserved                                     |
 
 **Table 10a** - Capabilities (subdevice)
 
 Some capabilities can represent a range:
 
-| Capability ID | Meaning          | Unit         | Size (bytes)   |
-|---------------|------------------|--------------|----------------|
-| 0x80          | Frequency        | Hz           | 8 (unsigned)   |
-| 0x81          | LNA gain         | dB           | 4 (float)      |
-| 0x82          | Power            | dBm          | 4 (float)      |
-| 0x83          | Channel width    | Hz           | 4 (float)      |
-| 0x84          | Sample rate      | Hz           | 4 (float)      |
-| 0x85 .. 0xFF  | Reserved         | -            | -              |
+| Capability ID | Meaning              | Unit         | Size (bytes)   |
+|---------------|----------------------|--------------|----------------|
+| 0x80          | Receive frequency    | Hz           | 8 (unsigned)   |
+| 0x81          | Transmit frequency   | Hz           | 8 (unsigned)   |
+| 0x82          | LNA gain             | dB           | 4 (float)      |
+| 0x83          | Power                | dBm          | 4 (float)      |
+| 0x84          | Channel width        | Hz           | 4 (float)      |
+| 0x85          | Sample rate          | Hz           | 4 (float)      |
+| 0x86 .. 0xFF  | Reserved             | -            | -              |
 
 **Table 10b** - Capabilities (subdevice)
 
@@ -254,12 +256,13 @@ Parameters are used to configure subdevices.
 
 | Parameter ID  | Meaning                                      | Size (bytes)   | Unit     |
 |---------------|----------------------------------------------|----------------|----------|
-| 0x00          | Frequency                                    | 8 (unsigned)   | Hz       |
-| 0x01          | LNA gain                                     | 4 (float)      | dB       |
-| 0x02          | Output power                                 | 4 (float)      | dBm      |
-| 0x03          | Channel width                                | 4 (float)      | Hz       |
-| 0x04          | Sample rate                                  | 4 (float)      | Hz       |
-| 0x05          | Frequency correction                         | 4 (float)      | ppm      |
+| 0x00          | Receive frequency                            | 8 (unsigned)   | Hz       |
+| 0x01          | Transmit frequency                           | 8 (unsigned)   | Hz       |
+| 0x02          | LNA gain                                     | 4 (float)      | dB       |
+| 0x03          | Output power                                 | 4 (float)      | dBm      |
+| 0x04          | Channel width                                | 4 (float)      | Hz       |
+| 0x05          | Sample rate                                  | 4 (float)      | Hz       |
+| 0x06          | Frequency correction                         | 4 (float)      | ppm      |
 
 **Table 11** - Subdevice parameters
 
