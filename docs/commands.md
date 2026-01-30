@@ -2,7 +2,7 @@
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
 M17 Foundation<br>
-26 May 2025
+30 January 2026
 
 ## Protocol revision
 The protocol described in this document is **CARI 1.3**.
@@ -25,7 +25,7 @@ UL   - Uplink<br>
 ZMQ  - ZeroMQ<br>
 
 ## Introduction
-CARI protocol is supposed to mimic professionally used *Common Public Radio Interface* (CPRI)
+CARI protocol is designed to mimic professionally used *Common Public Radio Interface* (CPRI)
 and offer a part of its functionality.
 The protocol allows for basic data, control and supervision plane access, letting the user directly control
 radio devices over a given medium. [ZeroMQ](https://zeromq.org/) is used for all data transfers.<br>
@@ -52,14 +52,14 @@ The interface assumes there are at least two devices connected over some physica
 * at least one controlled device (slave)
 
 The connection between two or more devices is called a *network*.
-A single network can consists of multiple masters and slaves.
+A single network can consist of multiple masters and slaves.
 Since there is no device addressing, the physical layer must be able to provide it.
 
 ![Basic master-slave transaction](../gfx/Master-slave.png)
 
 **Figure 2** - Basic master-slave transaction
 
-### Data flow and the Control Planes
+### Data flow and the Planes
 There are 4 paths for the data flow, called *planes*:
 * baseband uplink (*UL*)
 * baseband downlink (*DL*)
@@ -82,6 +82,8 @@ For multi-oscillator devices, there can be more than one pair of baseband UL/DL 
 **Note:** CARI connection type over the Control Plane is point-to-point. Only one slave device can be addressed within a single transaction.
 To set desired parameters of multiple devices, it is required to issue several commands.
 
+**Note:** Each slave shall expose a dedicated CTRL REP endpoint. Device selection is performed by endpoint selection, not by protocol-level addressing.
+
 #### Supervision
 Supervision plane gives access to various telemetry data, including chassis temperature, reflected RF power, RL, etc.
 The slave device offers telemetry data over its ZMQ PUB instance.<br>
@@ -100,12 +102,14 @@ A *reply* is a similar sequence sent back by the controlled device as an acknowl
 Replies may contain return values for error signalling.<br>
 Subdevices can be accessed independently and are addressed using a single byte.
 
+**Note:** 32-bit IEEE-754 floating point values are used wherever *float* is mentioned. The default byte order is little-endian, unless specified otherwise.
+
 #### Command format
 | CID        | Byte count field |
 |------------|------------------|
 | 1 byte     | 2 bytes          |
 
-**Table 1** - Simple command/reply with no addressing or parameters (eg. *ping/pong*)
+**Table 1** - Simple command/reply with no addressing or parameters (eg. *Ping/Pong*)
 
 | CID        | Byte count field | Parameters       |
 |------------|------------------|------------------|
@@ -121,13 +125,22 @@ Subdevices can be accessed independently and are addressed using a single byte.
 
 \*Address of either a register or subdevice.
 
-The reply for a command uses the same value in its ID field.
-Byte count is little-endian and includes **all** bytes in the sequence.
+The reply for a command uses the same value in its ID field, even if the received CID is invalid.
+Byte count is little-endian and includes **all** bytes in the sequence, including the CID. Zero-payload commands are possible (e.g. *Ping* - see the **Command list** table below).
 
 ### Command list
+Commands are divided into 2 types: *WRITE* and *READ*.
+
+| Type  | CID range  |
+|-------|------------|
+| WRITE | 0x00..0x7F |
+| READ  | 0x80..0xFF |
+
+**Table 4** - command types
+
 | CID     | Byte count | Action                                | Address    | Parameters                             | Return value               | Reply byte count |
 |---------|------------|---------------------------------------|------------|----------------------------------------|----------------------------|------------------|
-| 0x00    | 3          | Ping/pong                             | -          | -                                      | 32-bit value (error flags) | 7                |
+| 0x00    | 3          | Ping/Pong                             | -          | -                                      | 32-bit value (error flags) | 7                |
 | 0x01    | 5          | Set device's register value*          | register   | 8-bit value                            | 0/1                        | 4                |
 | 0x02    | varies     | Set subdevice's parameter             | subdevice  | 8-bit parameter ID, value (varies)     | 0/1                        | 4                |
 | 0x03    | 5          | Execute subdevice's action            | subdevice  | 8-bit action ID                        | 0/1                        | 4                |
@@ -135,12 +148,11 @@ Byte count is little-endian and includes **all** bytes in the sequence.
 | 0x05    | 6          | Initiate BB DL PUB stream             | subdevice  | 16-bit port number                     | 0/1                        | 4                |
 | 0x06    | varies     | Initiate Supervision PUB stream       | subdevice  | 16-bit port number, parameters list*** | 0/1                        | 4                |
 
-**Table 4** - *WRITE* command list
+**Table 5** - *WRITE* command list
 
 \*Writing any value to register 0x00 using CID=0x01 shall initiate device's reset.<br>
 \**The string does not have to be null-terminated (eg. "tcp://192.168.0.69:1337").<br>
 \***Data transfer ceases when the parameters list is empty.
-
 
 | CID     | Byte count | Action                                | Address    | Parameters           | Return value                   | Reply byte count |
 |---------|------------|---------------------------------------|------------|----------------------|--------------------------------|------------------|
@@ -150,10 +162,12 @@ Byte count is little-endian and includes **all** bytes in the sequence.
 | 0x83    | 5          | Get subdevice parameter               | subdevice  | 8-bit parameter ID   | value of a selected parameter  | varies           |
 | 0x84    | 4          | Get Supervision parameters list       | -          | -                    | list of supported quantities   | varies           |
 
-**Table 5** - *READ* command list
+**Table 6** - *READ* command list
 
-All values are little-endian. Return value of 0 means success, any other value is an error code (see **Table 6** for details).
+All values are little-endian. Return value of 0 means success, any other value is an error code (see **Table 7** for details).
 Parameter of 0 disables the function, 1 enables it.
+
+**Note:** The *IDENT* string shall be UTF-8 encoded.
 
 ### Reply error codes
 | Value    | Meaning                  |
@@ -166,7 +180,7 @@ Parameter of 0 disables the function, 1 enables it.
 | 5        | Value out of range       |
 | 6 .. 255 | Reserved                 |
 
-**Table 6** - Reply error codes
+**Table 7** - Reply error codes
 
 ### Device error flags
 | Bit      | Meaning                                        |
@@ -178,7 +192,7 @@ Parameter of 0 disables the function, 1 enables it.
 | 4 .. 30  | Reserved                                       |
 | 31 (MSB) | Reserved                                       |
 
-**Table 7** - Device error flags
+**Table 8** - Device error flags
 
 ### Config/info register access
 **Note:** Some registers are write-only. All values are 8-bit (single byte).
@@ -189,7 +203,7 @@ Parameter of 0 disables the function, 1 enables it.
 | 0x01             | Number of subdevices                  | R      |
 | 0x02 .. 0xFF     | User-defined space                    | R/W    |
 
-**Table 8** - Register address map
+**Table 9** - Register address map
 
 #### CARI version support
 This field holds supported CARI protocol version as `(major<<4)|minor`.
@@ -201,7 +215,7 @@ This field holds supported CARI protocol version as `(major<<4)|minor`.
 | 0x01          | Supervision channel available                |
 | 0x02 .. 0xFF  | Reserved                                     |
 
-**Table 9** - Capabilities (device)
+**Table 10** - Capabilities (device)
 
 ### Subdevice's capabilities
 Most capabilities are explicit - if its ID appears in the list - it is supported:
@@ -217,18 +231,18 @@ Most capabilities are explicit - if its ID appears in the list - it is supported
 | 0x06          | Automatic Frequency Control available        |
 | 0x07          | Frequency reference available                |
 |               |                                              |
-| 0x08          | Amplitude demodulator avaialble              |
+| 0x08          | Amplitude demodulator available              |
 | 0x09          | Frequency demodulator available              |
 | 0x0A          | Phase demodulator available                  |
 | 0x0B          | Single-sideband demodulator available        |
 |               |                                              |
-| 0x0C          | Amplitude modulator avaialble                |
+| 0x0C          | Amplitude modulator available                |
 | 0x0D          | Frequency modulator available                |
 | 0x0E          | Phase modulator available                    |
 | 0x0F          | Single-sideband modulator available          |
 | 0x10 .. 0x7F  | Reserved                                     |
 
-**Table 10a** - Capabilities (subdevice)
+**Table 11a** - Capabilities (subdevice)
 
 Some capabilities can represent a range:
 
@@ -242,7 +256,7 @@ Some capabilities can represent a range:
 | 0x85          | Sample rate          | Hz           | 4 (float)      |
 | 0x86 .. 0xFF  | Reserved             | -            | -              |
 
-**Table 10b** - Capabilities (subdevice)
+**Table 11b** - Capabilities (subdevice)
 
 #### Expressing value ranges
 Capabilities with addresses greater than or equal 0x80 can be used to represent a certain range.
@@ -264,7 +278,7 @@ Parameters are used to configure subdevices.
 | 0x05          | Sample rate                                  | 4 (float)      | Hz       |
 | 0x06          | Frequency correction                         | 4 (float)      | ppm      |
 
-**Table 11** - Subdevice parameters
+**Table 12** - Subdevice parameters
 
 ### Subdevice actions
 | Action ID     | Action                                   |
@@ -274,24 +288,34 @@ Parameters are used to configure subdevices.
 | 0x02          | Reception stop (stop baseband DL)        |
 | 0x03 .. 0xFF  | Reserved                                 |
 
-**Table 12** - Subdevice actions
+**Table 13** - Subdevice actions
 
 ### Supervision plane - data format
 The data published over the Supervision Plane is grouped into packets:<br>
 `Quantity ID | Value | Quantity ID | Value | ...`<br>
 Data packets are transmitted repeatedly.
 
+For quantities requiring subdevice context (as indicated in **Table 14**),
+the *Value* field shall be preceded by a 1-byte subdevice identifier,
+resulting in the following encoding:<br>
+`Quantity ID | Subdevice ID | Value`<br>
+
+All *SPVN* packets are atomic ZMQ messages.
+Quantities may appear in any order.
+A given quantity shall not be repeated for the same context within a single packet.
+For subdevice quantities, the context is defined by the subdevice identifier.
+
 #### Quantities
 | ID       | Quantity                         | Size (bytes)   | Unit        | Remarks                                                |
 |----------|----------------------------------|----------------|-------------|--------------------------------------------------------|
-| 0x00     | Temperature                      | 4 (float)      | deg. C      | Measured at the RF unit?                               |
-| 0x01     | Voltage                          | 4 (float)      | V           | Measured at the RF unit?                               |
+| 0x00     | Temperature                      | 4 (float)      | deg. C      | Measured at the RF unit / chassis                      |
+| 0x01     | Voltage                          | 4 (float)      | V           | Measured at the power supply input                     |
 | 0x02     | Current                          | 4 (float)      | A           | Total current draw by the device, DC side              |
 | 0x03     | Return Loss                      | 4 (float)      | dB          | The value has to be prepended with a subdevice address |
 | 0x04     | RF power (incident, average)     | 4 (float)      | dBm         | The value has to be prepended with a subdevice address |
 | 0x05     | RF power (reflected, average)    | 4 (float)      | dBm         | The value has to be prepended with a subdevice address |
 
-**Table 12** - Supervision plane - supported quantities
+**Table 14** - Supervision plane - supported quantities
 
 ## Basic setup
 Basic subdevice setup is shown in *Figure 3*.
