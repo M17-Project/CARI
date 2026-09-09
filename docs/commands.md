@@ -2,7 +2,7 @@
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
 M17 Foundation<br>
-30 January 2026
+8 September 2026
 
 ## Protocol revision
 The protocol described in this document is **CARI 1.3**.
@@ -40,7 +40,7 @@ Devices can be either masters or slaves, role mixing is not possible (one role p
 
 ### Subdevices
 Transmitters and receivers within a single slave device are called *subdevices*.
-There can be a maximum of 256 subdevices per device.
+There can be a maximum of 255 subdevices per device.
 
 ![Device structure](../gfx/Device_structure.png)
 
@@ -195,15 +195,17 @@ Parameter of 0 disables the function, 1 enables it.
 **Table 8** - Device error flags
 
 ### Config/info register access
-**Note:** Some registers are write-only. All values are 8-bit (single byte).
+**Note:** Some registers are read-only. All values are 8-bit (single byte).
 
 | Register address | Description                           | Access |
 |------------------|---------------------------------------|--------|
-| 0x00             | CARI version support                  | R      |
+| 0x00             | CARI version support                  | R/W*   |
 | 0x01             | Number of subdevices                  | R      |
 | 0x02 .. 0xFF     | User-defined space                    | R/W    |
 
 **Table 9** - Register address map
+
+\*Writing any value to register 0x00 shall initiate device's reset.<br>
 
 #### CARI version support
 This field holds supported CARI protocol version as `(major<<4)|minor`.
