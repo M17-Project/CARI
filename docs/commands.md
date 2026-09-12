@@ -145,12 +145,12 @@ Commands are divided into 2 types: *WRITE* and *READ*.
 | CID     | Byte count | Action                                | Address    | Parameters                             | Return value               | Reply byte count |
 |---------|------------|---------------------------------------|------------|----------------------------------------|----------------------------|------------------|
 | 0x00    | 3          | Ping/Pong                             | -          | -                                      | 32-bit value (error flags) | 7                |
-| 0x01    | 5          | Set device's register value*          | register   | 8-bit value                            | 0/1                        | 4                |
-| 0x02    | varies     | Set subdevice's parameter             | subdevice  | 8-bit parameter ID, value (varies)     | 0/1                        | 4                |
-| 0x03    | 5          | Execute subdevice's action            | subdevice  | 8-bit action ID                        | 0/1                        | 4                |
-| 0x04    | varies     | SUB connect to BB UL PUB              | subdevice  | master's address as a string**         | 0/1                        | 4                |
-| 0x05    | 6          | Initiate BB DL PUB stream             | subdevice  | 16-bit port number                     | 0/1                        | 4                |
-| 0x06    | varies     | Initiate Supervision PUB stream       | subdevice  | 16-bit port number, parameters list*** | 0/1                        | 4                |
+| 0x01    | 5          | Set device's register value*          | register   | 8-bit value                            | 0 / error code             | 4                |
+| 0x02    | varies     | Set subdevice's parameter             | subdevice  | 8-bit parameter ID, value (varies)     | 0 / error code             | 4                |
+| 0x03    | 5          | Execute subdevice's action            | subdevice  | 8-bit action ID                        | 0 / error code             | 4                |
+| 0x04    | varies     | SUB connect to BB UL PUB              | subdevice  | master's address as a string**         | 0 / error code             | 4                |
+| 0x05    | 6          | Initiate BB DL PUB stream             | subdevice  | 16-bit port number                     | 0 / error code             | 4                |
+| 0x06    | varies     | Initiate Supervision PUB stream       | subdevice  | 16-bit port number, parameters list*** | 0 / error code             | 4                |
 
 **Table 5** - *WRITE* command list
 
@@ -165,11 +165,13 @@ Commands are divided into 2 types: *WRITE* and *READ*.
 | 0x82    | 4          | Get subdevice capabilities list       | subdevice  | -                    | list of capabilities           | varies           |
 | 0x83    | 5          | Get subdevice parameter               | subdevice  | 8-bit parameter ID   | value of a selected parameter  | varies           |
 | 0x84    | 3          | Get Supervision parameters list       | -          | -                    | list of supported quantities   | varies           |
+| 0x85    | 3          | Get device capabilities list          | -          | -                    | list of capabilities           | varies           |
 
 **Table 6** - *READ* command list
 
-All values are little-endian. Return value of 0 means success, any other value is an error code (see **Table 7** for details),
-except for CID=0x00 (*Ping/Pong*), which returns the 32-bit error flags bitfield defined in **Table 8**.
+All values are little-endian. Return value of 0 means success, any other value is an error code (see **Table 7** for details).
+On success, CID=0x00 (*Ping/Pong*) always replies with byte count 7 and the 32-bit error flags value defined in **Table 8**.
+On failure, it uses the generic format: `CID | Byte count | Error code` (**Table 7**).
 Parameter of 0 disables the function, while 1 enables it.
 
 **Note:** The *IDENT* string shall be UTF-8 encoded.
