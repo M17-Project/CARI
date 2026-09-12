@@ -40,7 +40,8 @@ Devices can be either masters or slaves, role mixing is not possible (one role p
 
 ### Subdevices
 Transmitters and receivers within a single slave device are called *subdevices*.
-There can be a maximum of 255 subdevices per device.
+There can be a maximum of 255 subdevices per device. Subdevices use addresses from 0x00 to 0xFE (inclusive).
+The address of 0xFF is reserved.
 
 ![Device structure](../gfx/Device_structure.png)
 
@@ -70,12 +71,15 @@ There are 4 paths for the data flow, called *planes*:
 Connections through the uplink and downlink planes can be established only when required.
 Baseband streams are managed by ZMQ PUB-SUB pairs.
 
+**Note:** for the UL plane, the master publishes and slaves subscribe.
+For the DL plane, the slave publishes and the master subscribes.
+
 #### Data transactions over the Control Plane (CTRL)
 A *data transaction* is any event of data exchange between the master and a slave device.
 It consists of a *command* and a *reply*.
 
 Control plane is used for setting radio equipment's parameters, such as oscillators' frequencies and RF signals' power levels.
-This path uses a ZMQ REP-REQ pair.<br>
+This path uses a ZMQ REQ-REP pair.<br>
 
 For multi-oscillator devices, there can be more than one pair of baseband UL/DL streams.
 
@@ -131,10 +135,10 @@ Byte count is little-endian and includes **all** bytes in the sequence, includin
 ### Command list
 Commands are divided into 2 types: *WRITE* and *READ*.
 
-| Type  | CID range  |
-|-------|------------|
-| WRITE | 0x00..0x7F |
-| READ  | 0x80..0xFF |
+| Type    | CID range  |
+|---------|------------|
+| *WRITE* | 0x00..0x7F |
+| *READ*  | 0x80..0xFF |
 
 **Table 4** - command types
 
@@ -160,12 +164,13 @@ Commands are divided into 2 types: *WRITE* and *READ*.
 | 0x81    | 4          | Get register value                    | register   | -                    | 8-bit value                    | 4                |
 | 0x82    | 4          | Get subdevice capabilities list       | subdevice  | -                    | list of capabilities           | varies           |
 | 0x83    | 5          | Get subdevice parameter               | subdevice  | 8-bit parameter ID   | value of a selected parameter  | varies           |
-| 0x84    | 4          | Get Supervision parameters list       | -          | -                    | list of supported quantities   | varies           |
+| 0x84    | 3          | Get Supervision parameters list       | -          | -                    | list of supported quantities   | varies           |
 
 **Table 6** - *READ* command list
 
-All values are little-endian. Return value of 0 means success, any other value is an error code (see **Table 7** for details).
-Parameter of 0 disables the function, 1 enables it.
+All values are little-endian. Return value of 0 means success, any other value is an error code (see **Table 7** for details),
+except for CID=0x00 (*Ping/Pong*), which returns the 32-bit error flags bitfield defined in **Table 8**.
+Parameter of 0 disables the function, while 1 enables it.
 
 **Note:** The *IDENT* string shall be UTF-8 encoded.
 
@@ -253,7 +258,7 @@ Some capabilities can represent a range:
 | 0x80          | Receive frequency    | Hz           | 8 (unsigned)   |
 | 0x81          | Transmit frequency   | Hz           | 8 (unsigned)   |
 | 0x82          | LNA gain             | dB           | 4 (float)      |
-| 0x83          | Power                | dBm          | 4 (float)      |
+| 0x83          | Output power         | dBm          | 4 (float)      |
 | 0x84          | Channel width        | Hz           | 4 (float)      |
 | 0x85          | Sample rate          | Hz           | 4 (float)      |
 | 0x86 .. 0xFF  | Reserved             | -            | -              |
