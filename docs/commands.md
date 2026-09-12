@@ -2,7 +2,7 @@
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
 M17 Foundation<br>
-8 September 2026
+12 September 2026
 
 ## Protocol revision
 The protocol described in this document is **CARI 1.3**.
@@ -172,7 +172,7 @@ Commands are divided into 2 types: *WRITE* and *READ*.
 All values are little-endian. Return value of 0 means success, any other value is an error code (see **Table 7** for details).
 On success, CID=0x00 (*Ping/Pong*) always replies with byte count 7 and the 32-bit error flags value defined in **Table 8**.
 On failure, it uses the generic format: `CID | Byte count | Error code` (**Table 7**).
-Parameter of 0 disables the function, while 1 enables it.
+For boolean parameters, 0 disables the function, while 1 enables it.
 
 **Note:** The *IDENT* string shall be UTF-8 encoded.
 
@@ -227,7 +227,8 @@ This field holds supported CARI protocol version as `(major<<4)|minor`.
 **Table 10** - Capabilities (device)
 
 ### Subdevice's capabilities
-Most capabilities are explicit - if its ID appears in the list - it is supported:
+A capability list consists of consecutive capability records.
+Explicit capabilities are encoded as single capability ID bytes:
 
 | Capability ID | Meaning                                      |
 |---------------|----------------------------------------------|
@@ -249,11 +250,14 @@ Most capabilities are explicit - if its ID appears in the list - it is supported
 | 0x0D          | Frequency modulator available                |
 | 0x0E          | Phase modulator available                    |
 | 0x0F          | Single-sideband modulator available          |
-| 0x10 .. 0x7F  | Reserved                                     |
+|               |                                              |
+| 0x10          | DC offset correction available               |
+|               |                                              |
+| 0x11 .. 0x7F  | Reserved                                     |
 
 **Table 11a** - Capabilities (subdevice)
 
-Some capabilities can represent a range:
+Ranged capabilities are encoded as a capability ID followed by a value of the size and type specified in **Table 11b**.
 
 | Capability ID | Meaning              | Unit         | Size (bytes)   |
 |---------------|----------------------|--------------|----------------|
@@ -286,6 +290,9 @@ Parameters are used to configure subdevices.
 | 0x04          | Channel width                                | 4 (float)      | Hz       |
 | 0x05          | Sample rate                                  | 4 (float)      | Hz       |
 | 0x06          | Frequency correction                         | 4 (float)      | ppm      |
+| 0x07          | Automatic Gain Control (AGC)                 | 1 (boolean)    | -        |
+| 0x08          | Automatic Frequency Control (AFC)            | 1 (boolean)    | -        |
+| 0x09          | DC offset correction                         | 1 (boolean)    | -        |
 
 **Table 12** - Subdevice parameters
 
