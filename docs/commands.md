@@ -2,7 +2,7 @@
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
 M17 Foundation<br>
-12 September 2026
+13 September 2026
 
 ## Protocol revision
 The protocol described in this document is **CARI 1.3**.
@@ -252,10 +252,19 @@ Explicit capabilities are encoded as single capability ID bytes:
 | 0x0F          | Single-sideband modulator available          |
 |               |                                              |
 | 0x10          | DC offset correction available               |
+| 0x11 .. 0x3F  | Reserved                                     |
 |               |                                              |
-| 0x11 .. 0x7F  | Reserved                                     |
+| 0x40          | Signal format CF32 available                 |
+| 0x41          | Signal format CS16 available                 |
+| 0x42          | Signal format F32 available                  |
+| 0x43          | Signal format S16 available                  |
+| 0x44 .. 0x7F  | Reserved                                     |
 
 **Table 11a** - Capabilities (subdevice)
+
+Format notation: C - complex, F - floating point, S - signed.
+Number denotes bit size of either real or real/imaginary components.
+Complex samples are encoded as consecutive real (I) and imaginary (Q) components.
 
 Ranged capabilities are encoded as a capability ID followed by a value of the size and type specified in **Table 11b**.
 
@@ -293,6 +302,7 @@ Parameters are used to configure subdevices.
 | 0x07          | Automatic Gain Control (AGC)                 | 1 (boolean)    | -        |
 | 0x08          | Automatic Frequency Control (AFC)            | 1 (boolean)    | -        |
 | 0x09          | DC offset correction                         | 1 (boolean)    | -        |
+| 0x10          | Signal format                                | 1 (unsigned)   | -        |
 
 **Table 12** - Subdevice parameters
 
