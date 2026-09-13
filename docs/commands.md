@@ -81,7 +81,7 @@ It consists of a *command* and a *reply*.
 Control plane is used for setting radio equipment's parameters, such as oscillators' frequencies and RF signals' power levels.
 This path uses a ZMQ REQ-REP pair.<br>
 
-For multi-oscillator devices, there can be more than one pair of baseband UL/DL streams.
+For multi-subdevice devices, there can be more than one pair of baseband UL/DL streams.
 
 **Note:** CARI connection type over the Control Plane is point-to-point. Only one slave device can be addressed within a single transaction.
 To set desired parameters of multiple devices, it is required to issue several commands.
