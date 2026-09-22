@@ -2,7 +2,7 @@
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
 M17 Foundation<br>
-13 September 2026
+22 September 2026
 
 ## Protocol revision
 The protocol described in this document is **CARI 1.3**.
@@ -71,8 +71,8 @@ There are 4 paths for the data flow, called *planes*:
 Connections through the uplink and downlink planes can be established only when required.
 Baseband streams are managed by ZMQ PUB-SUB pairs.
 
-**Note:** for the UL plane, the master publishes and slaves subscribe.
-For the DL plane, the slave publishes and the master subscribes.
+**Note:** For both the UL and DL planes, the slave binds, the master connects.
+For DL, the slave binds a PUB socket, for UL, the slave binds a SUB socket.
 
 #### Data transactions over the Control Plane (CTRL)
 A *data transaction* is any event of data exchange between the master and a slave device.
@@ -148,14 +148,15 @@ Commands are divided into 2 types: *WRITE* and *READ*.
 | 0x01    | 5          | Set device's register value*          | register   | 8-bit value                            | 0 / error code             | 4                |
 | 0x02    | varies     | Set subdevice's parameter             | subdevice  | 8-bit parameter ID, value (varies)     | 0 / error code             | 4                |
 | 0x03    | 5          | Execute subdevice's action            | subdevice  | 8-bit action ID                        | 0 / error code             | 4                |
-| 0x04    | varies     | SUB connect to BB UL PUB              | subdevice  | master's address as a string**         | 0 / error code             | 4                |
-| 0x05    | 6          | Initiate BB DL PUB stream             | subdevice  | 16-bit port number                     | 0 / error code             | 4                |
+| 0x04    | 6          | Initiate BB UL SUB stream**           | subdevice  | 16-bit port number                     | 0 / error code             | 4                |
+| 0x05    | 6          | Initiate BB DL PUB stream**           | subdevice  | 16-bit port number                     | 0 / error code             | 4                |
 | 0x06    | varies     | Initiate Supervision PUB stream       | subdevice  | 16-bit port number, parameters list*** | 0 / error code             | 4                |
 
 **Table 5** - *WRITE* command list
 
 \*Writing any value to register 0x00 using CID=0x01 shall initiate device's reset.<br>
-\**The string does not have to be null-terminated (eg. "tcp://192.168.0.69:1337").<br>
+\**The master obtains the slave's network address from the already established CTRL connection to that device.
+After a successful reply to CID 0x04 or 0x05, the master connects its counterpart socket to that same address on the port it specified.<br>
 \***Data transfer ceases when the parameters list is empty.
 
 | CID     | Byte count | Action                                | Address    | Parameters           | Return value                   | Reply byte count |
