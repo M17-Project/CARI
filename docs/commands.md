@@ -2,7 +2,7 @@
 **Author:**<br>
 Wojciech Kaczmarski, SP5WWP<br>
 M17 Foundation<br>
-22 September 2026
+23 September 2026
 
 ## Protocol revision
 The protocol described in this document is **CARI 1.3**.
@@ -308,12 +308,14 @@ Parameters are used to configure subdevices.
 **Table 12** - Subdevice parameters
 
 ### Subdevice actions
-| Action ID     | Action                                   |
-|---------------|------------------------------------------|
-| 0x00          | Subdevice reset                          |
-| 0x01          | Reception start (initiate baseband DL)   |
-| 0x02          | Reception stop (stop baseband DL)        |
-| 0x03 .. 0xFF  | Reserved                                 |
+| Action ID     | Action                                     |
+|---------------|--------------------------------------------|
+| 0x00          | Subdevice reset                            |
+| 0x01          | Reception start (initiate baseband DL)     |
+| 0x02          | Reception stop (stop baseband DL)          |
+| 0x03          | Transmission start (initiate baseband UL)  |
+| 0x04          | Transmission stop (stop baseband UL)       |
+| 0x05 .. 0xFF  | Reserved                                   |
 
 **Table 13** - Subdevice actions
 
