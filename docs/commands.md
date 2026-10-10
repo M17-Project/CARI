@@ -441,6 +441,10 @@ The current TX state can be read with parameter 0x0E:
 
 **Table 17b** - TX states
 
+![TX state transitions](../gfx/TX_states.png)
+
+**Figure 4** - TX state transitions
+
 ### Baseband data format
 Each ZMQ message on the DL and UL planes carries an integer number of samples in the signal format selected with parameter 0x0A.
 There is no header - messages contain baseband data only. Multi-byte components are little-endian.
@@ -546,12 +550,31 @@ Keep `ZMQ_SNDHWM`/`ZMQ_RCVHWM` low and consider reducing `ZMQ_SNDBUF`/`ZMQ_RCVBU
 * A master should use a receive timeout on its REQ socket. If a reply does not arrive, the REQ socket has to be closed and reopened
 (or `ZMQ_REQ_RELAXED` used) before sending another command.
 
-## Basic setup
-Basic subdevice setup is shown in *Figure 4*.
+## Example sequences (informative)
+### Basic setup
+Basic subdevice setup is shown in *Figure 5*.
 
 ![Basic setup](../gfx/Basic_config.png)
 
-**Figure 4** - Basic subdevice setup
+**Figure 5** - Basic subdevice setup
+
+### Reception
+*Figure 6* shows a reception session. The master configures the subdevice, then asks the slave to bind the DL socket.
+Only after a successful reply does the master connect its SUB socket. Reception is started and stopped with subdevice actions.
+Binding port 0 closes the socket once the stream is stopped.
+
+![Reception](../gfx/RX_stream.png)
+
+**Figure 6** - Reception
+
+### Transmission and UL underrun recovery
+*Figure 7* shows a transmission session with a UL underrun. While samples arrive, the slave paces the master.
+When the master stalls, the slave ramps the output down, unkeys and trips. The master detects the trip with *Ping*,
+finds the tripped subdevice by reading its TX state, clears the trip and starts the transmission again.
+
+![Transmission and UL underrun recovery](../gfx/TX_stream.png)
+
+**Figure 7** - Transmission and UL underrun recovery
 
 ## Changes from CARI 1.x
 * UL plane: the slave binds a PULL socket, the master connects a PUSH socket (previously PUB-SUB). CID 0x04 takes a port number and the slave binds.
