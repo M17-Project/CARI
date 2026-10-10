@@ -112,27 +112,6 @@ blocks:
     coordinate: [648, 164.0]
     rotation: 0
     state: enabled
-- name: blocks_throttle2_0_0
-  id: blocks_throttle2
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    ignoretag: 'True'
-    limit: auto
-    maximum: '0.1'
-    maxoutbuf: '960'
-    minoutbuf: '960'
-    samples_per_second: samp_rate
-    type: byte
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [736, 292.0]
-    rotation: 0
-    state: enabled
 - name: blocks_vector_to_stream_0
   id: blocks_vector_to_stream
   parameters:
@@ -151,17 +130,15 @@ blocks:
     coordinate: [224, 304.0]
     rotation: 0
     state: enabled
-- name: zeromq_pub_sink_0_0
-  id: zeromq_pub_sink
+- name: zeromq_push_sink_0_0
+  id: zeromq_push_sink
   parameters:
-    address: tcp://*:17018
+    address: '"tcp://"+rru_addr+":17018"'
     affinity: ''
     alias: ''
-    bind: 'True'
+    bind: 'False'
     comment: ''
-    drop_on_hwm: 'True'
     hwm: '-1'
-    key: ''
     pass_tags: 'False'
     timeout: '100'
     type: byte
@@ -200,8 +177,7 @@ blocks:
 connections:
 - [analog_ctcss_squelch_ff_0, '0', blocks_float_to_char_0, '0']
 - [blocks_char_to_float_0, '0', analog_ctcss_squelch_ff_0, '0']
-- [blocks_float_to_char_0, '0', blocks_throttle2_0_0, '0']
-- [blocks_throttle2_0_0, '0', zeromq_pub_sink_0_0, '0']
+- [blocks_float_to_char_0, '0', zeromq_push_sink_0_0, '0']
 - [blocks_vector_to_stream_0, '0', blocks_char_to_float_0, '0']
 - [zeromq_sub_source_0, '0', blocks_vector_to_stream_0, '0']
 
