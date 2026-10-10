@@ -64,6 +64,8 @@ The interface assumes there are at least two devices connected over some physica
 
 The connection between two or more devices is called a *network*.
 A single network can consist of multiple masters and slaves.
+A slave has no notion of ownership - it executes commands from any master.
+Coordinating multiple masters controlling the same slave is out of scope of this document.
 Since there is no device addressing, the physical layer must be able to provide it.
 
 ![Basic master-slave transaction](../gfx/Master-slave.png)
@@ -91,7 +93,7 @@ For both planes, the slave binds and the master connects:
 
 **Table 1** - Baseband socket types
 
-DL uses a PUB-SUB pair, so more than one master (eg. a BBU and a monitoring station) may receive the same stream.
+DL uses a PUB-SUB pair, so more than one master (e.g. a BBU and a monitoring station) may receive the same stream.
 The slave never waits for a slow or absent master - messages that cannot be delivered are dropped.
 
 UL uses a PUSH-PULL pair. The slave shall read UL samples from its socket only as fast as it transmits them,
@@ -139,7 +141,7 @@ All multi-byte values are little-endian, unless specified otherwise.
 |------------|------------------|
 | 1 byte     | 2 bytes          |
 
-**Table 2** - Command with no addressing or parameters (eg. *Ping*)
+**Table 2** - Command with no addressing or parameters (e.g. *Ping*)
 
 | CID        | Byte count field | Parameters       |
 |------------|------------------|------------------|
@@ -198,7 +200,7 @@ Commands are divided into 2 types: *WRITE* and *READ*.
 
 **Table 7** - *WRITE* command list
 
-\*Writing any value to register 0x00 using CID=0x01 shall initiate device's reset.<br>
+\*Writing any value to register 0x00 using CID=0x01 shall initiate device's reset (see **Config/info register access**).<br>
 \**The slave binds the socket on all interfaces at the given TCP port (`tcp://*:<port>`).
 The master obtains the slave's network address from the already established CTRL connection to that device.
 After a successful reply, the master connects its counterpart socket (**Table 1**) to that same address on the port it specified.
@@ -251,7 +253,7 @@ The error flags are returned in the *Pong* reply (CID 0x00).
 
 **Table 10** - Device error flags
 
-\*Set while at least one subdevice is in the *tripped* state (see **UL underrun**).
+\*Set while at least one subdevice is in the *tripped* state (see **UL underrun handling**).
 Cleared when no subdevice remains tripped. Reading the flags does not clear it.
 
 ### Config/info register access
@@ -265,7 +267,8 @@ Cleared when no subdevice remains tripped. Reading the flags does not clear it.
 
 **Table 11** - Register address map
 
-\*Writing any value to register 0x00 shall initiate device's reset.<br>
+\*Writing any value to register 0x00 shall initiate device's reset. The slave sends the reply first, then resets.<br>
+A device reset stops all streams and closes all baseband and supervision sockets.<br>
 
 Writing a read-only register returns status 7. Accessing a register the device does not implement returns status 6.
 
@@ -357,7 +360,7 @@ Ranged capabilities are always transmitted in pairs of records with the same cap
 `... | Capability ID | Length | Value - low | Capability ID | Length | Value - high | ...`
 
 A single supported value is expressed as a pair with equal bounds.
-Multiple pairs with the same capability ID may be transmitted to express disjoint ranges (eg. two frequency bands).
+Multiple pairs with the same capability ID may be transmitted to express disjoint ranges (e.g. two frequency bands).
 
 ### Subdevice parameters
 Parameters are used to configure subdevices.
@@ -391,9 +394,10 @@ For boolean parameters, 0 disables the function, while 1 enables it. Any other v
 
 Parameter rules:
 * A value outside the subdevice's supported range, or an unsupported signal format or modulation mode, returns status 5.
+* A parameter the subdevice does not support (e.g. transmit frequency on a receive-only subdevice) returns status 2.
 * Writing the TX state parameter returns status 7.
 * Signal format, sample rate, modulation mode and baseband compression shall not be changed while the subdevice's DL or UL stream is running. Such an attempt returns status 8.
-Other parameters (eg. frequencies, gain, power) may be changed at any time.
+Other parameters (e.g. frequencies, gain, power) may be changed at any time.
 * The combination of parameters is checked when a stream is started (actions 0x01 and 0x03). If it is not valid, the start is refused with status 8. Valid combinations:
   * the I/Q modulation mode requires a complex signal format, all other modes require a real signal format,
   * baseband compression requires an integer signal format and a sample rate that can be represented in a FLAC frame header (see **Compressed baseband**).
@@ -425,6 +429,7 @@ Other parameters (eg. frequencies, gain, power) may be changed at any time.
 **Table 17a** - Subdevice actions
 
 * Reset stops reception and transmission and clears a trip. Bound sockets remain bound. Parameter values after a reset are device-specific.
+* An action the subdevice does not support (e.g. reset without capability 0x00, or transmission start on a receive-only subdevice) returns status 2.
 * Starting a stream requires its socket to be bound (CID 0x04 or 0x05), otherwise the slave replies with status 8.
 * Starting a running stream or stopping a stopped stream is not an error.
 * Transmission start is refused with status 8 while the subdevice is tripped.
@@ -509,7 +514,7 @@ Therefore, the sample rate has to be an integer number of Hz, and either at most
 * A receiver joining an ongoing stream shall discard data until the first frame sync code.
 
 **Note:** Every message carries complete frames, so the block size sets the minimum latency of a compressed stream
-(eg. 4096 samples take 170.7 ms at 24 kHz, but only 8.2 ms at 500 kHz).
+(e.g. 4096 samples take 170.7 ms at 24 kHz, but only 8.2 ms at 500 kHz).
 
 ### Supervision plane - data format
 The data published over the Supervision Plane is grouped into packets:<br>
@@ -544,6 +549,7 @@ For subdevice quantities, the context is defined by the subdevice identifier.
 * The master's SUB sockets (DL, SPVN) have to subscribe to all messages (empty `ZMQ_SUBSCRIBE` filter), otherwise nothing is received.
 * PUB-SUB connections drop messages sent before the subscription reaches the publisher. A DL receiver should not expect the very first samples of a stream.
 * PUSH queues messages until the connection is established, so UL samples sent right after connecting are not lost.
+* The number of samples per DL message is chosen by the slave. A master cannot assume any particular message size.
 * ZMQ high-water marks count messages, not bytes, and the operating system adds its own TCP buffers on both ends.
 Large queues translate directly into latency - at low sample rates, the default settings can buffer several seconds of signal.
 Keep `ZMQ_SNDHWM`/`ZMQ_RCVHWM` low and consider reducing `ZMQ_SNDBUF`/`ZMQ_RCVBUF` for the UL plane.
