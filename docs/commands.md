@@ -5,9 +5,12 @@ M17 Foundation<br>
 10 October 2026
 
 ## Protocol revision
-The protocol described in this document is **CARI 2.0**.
+The protocol described in this document is **CARI 2.1**.
 
-**Note:** CARI 2.0 is not backward compatible with CARI 1.x. See **Changes from CARI 1.x** at the end of this document.
+**Note:** CARI 2.x is not backward compatible with CARI 1.x. See **Changes from CARI 1.x** at the end of this document.
+
+**Note:** CARI 2.1 is backward compatible with CARI 2.0. It clarifies CARI 2.0 and adds the UL end-of-transmission marker.
+See **Changes from CARI 2.0** at the end of this document.
 
 ## Abbreviations used in this document
 BB   - Baseband<br>
@@ -177,6 +180,21 @@ Byte count is little-endian and includes **all** bytes in the sequence, includin
 or a command whose length does not match the length expected for its CID is malformed. The slave shall reply with status 1.
 The reply CID is the first byte of the received message, or 0xFF if the message is empty.
 * A command with an unknown CID shall be answered with status 2.
+* A message consisting of more than one ZMQ frame (multipart message) is malformed. The slave shall reply with status 1,
+using the first byte of the first frame as the reply CID.
+
+#### Status code precedence
+If a command fails for more than one reason, the slave replies with the first applicable status code in this order:
+1. 1 - malformed frame, or wrong length for the CID,
+2. 2 - unknown CID or reserved parameter ID (a *Set subdevice's parameter* command with a reserved parameter ID cannot be length-checked,
+so it is answered with status 2 rather than 1),
+3. 6 - invalid address,
+4. 2 - unsupported command, parameter, action or quantity,
+5. 7 - read-only,
+6. 5 - value out of range,
+7. 8 - invalid state.
+
+Status 3 (bind failed) is reported only after all of the checks above have passed.
 
 ### Command list
 Commands are divided into 2 types: *WRITE* and *READ*.
@@ -205,9 +223,16 @@ Commands are divided into 2 types: *WRITE* and *READ*.
 The master obtains the slave's network address from the already established CTRL connection to that device.
 After a successful reply, the master connects its counterpart socket (**Table 1**) to that same address on the port it specified.
 Issuing the command again with a different port closes the previous socket and binds a new one. Port 0 closes the socket.
-A socket can be rebound or closed only while its stream is stopped, otherwise the slave shall reply with status 8.<br>
-\***The slave publishes the listed quantities (**Table 20**) every *period* milliseconds. Period 0 is out of range (status 5).
-An empty quantity list or port 0 stops publishing and closes the socket. Issuing the command again replaces the previous configuration.
+A socket can be bound, rebound or closed only while its stream is stopped, otherwise the slave shall reply with status 8.
+A tripped subdevice's UL stream is stopped, so its UL socket can be rebound or closed.
+While the stream is stopped, issuing the command with the port that is already bound has no effect (status 0).
+If binding the new port fails, the slave replies with status 3 and the previously bound socket stays bound.
+Closing the UL socket, or rebinding it to a different port, discards all UL data the slave has not yet read.<br>
+\***The slave publishes the listed quantities (**Table 20**) every *period* milliseconds.
+An empty quantity list or port 0 stops publishing and closes the socket - the period is then ignored.
+Otherwise, period 0 is out of range (status 5).
+A quantity the device does not support, or a reserved quantity ID, is answered with status 2.
+A quantity listed more than once is published once. Issuing the command again replaces the previous configuration.
 
 | CID     | Byte count | Action                                | Address    | Parameters           | Reply data (on success)                    | Reply byte count (on success) |
 |---------|------------|---------------------------------------|------------|----------------------|--------------------------------------------|-------------------------------|
@@ -273,7 +298,9 @@ A device reset stops all streams and closes all baseband and supervision sockets
 Writing a read-only register returns status 7. Accessing a register the device does not implement returns status 6.
 
 #### CARI version support
-This field holds supported CARI protocol version as `(major<<4)|minor`. For CARI 2.0 the value is 0x20.
+This field holds supported CARI protocol version as `(major<<4)|minor`. For CARI 2.1 the value is 0x21.
+A master shall accept any slave with the same major version and use only the features of the slave's minor version
+(e.g. the UL end-of-transmission marker requires 0x21 or higher).
 
 ### Capabilities
 #### Capability list encoding
@@ -395,7 +422,8 @@ For boolean parameters, 0 disables the function, while 1 enables it. Any other v
 Parameter rules:
 * A value outside the subdevice's supported range, or an unsupported signal format or modulation mode, returns status 5.
 * A parameter the subdevice does not support (e.g. transmit frequency on a receive-only subdevice) returns status 2.
-* Writing the TX state parameter returns status 7.
+* Writing the TX state parameter returns status 7. Reading or writing it on a subdevice without a transmitter (capability 0x03) returns status 2.
+* Writing the deviation (0x0C) while the modulation mode is neither FM nor PM returns status 8.
 * Signal format, sample rate, modulation mode and baseband compression shall not be changed while the subdevice's DL or UL stream is running. Such an attempt returns status 8.
 Other parameters (e.g. frequencies, gain, power) may be changed at any time.
 * The combination of parameters is checked when a stream is started (actions 0x01 and 0x03). If it is not valid, the start is refused with status 8. Valid combinations:
@@ -431,8 +459,13 @@ Other parameters (e.g. frequencies, gain, power) may be changed at any time.
 * Reset stops reception and transmission and clears a trip. Bound sockets remain bound. Parameter values after a reset are device-specific.
 * An action the subdevice does not support (e.g. reset without capability 0x00, or transmission start on a receive-only subdevice) returns status 2.
 * Starting a stream requires its socket to be bound (CID 0x04 or 0x05), otherwise the slave replies with status 8.
-* Starting a running stream or stopping a stopped stream is not an error.
+* Starting a running stream or stopping a stopped stream is not an error. Exception: transmission start while the slave
+plays out the samples before an end-of-transmission marker returns status 8 (see **End of transmission**).
 * Transmission start is refused with status 8 while the subdevice is tripped.
+* Transmission stop ends the transmission at once: the slave ramps the output down, unkeys and discards the UL samples it has not transmitted.
+To transmit all samples, the master ends the UL stream instead (see **End of transmission**).
+* Transmission stop on a tripped subdevice is not an error and leaves it tripped.
+A trip is cleared only by action 0x05 or by a subdevice or device reset.
 * Clearing a trip returns the subdevice to the idle TX state. Clearing a subdevice that is not tripped is not an error.
 * Amplitude ramping at transmission start and stop is left to the slave.
 
@@ -489,9 +522,26 @@ The meaning of *x* depends on the modulation mode:
 
 **Table 19** - Sample meaning
 
+#### End of transmission
+A UL message with no data (zero bytes) marks the end of the UL stream. This also applies with baseband compression enabled.
+The slave transmits all samples received before it, ramps the output down, unkeys and returns to the idle TX state on its own.
+Running out of samples at the end marker is not an underrun.
+Since the end marker travels on the UL plane, it stays in order with the samples, including those still queued in ZMQ or TCP buffers when it is sent.
+
+After the end marker, the slave does not read the UL socket until the next transmission start.
+While it plays out the remaining samples, the UL stream is still running and the TX state stays 1 (transmitting):
+* transmission start returns status 8,
+* the UL socket can not be rebound or closed (status 8),
+* transmission stop aborts the play-out (ramp down, unkey, remaining samples discarded).
+
+The master detects the end of the play-out by reading the TX state (parameter 0x0E) until it returns to 0 (idle).
+The end marker requires a CARI 2.1 slave (register 0x00 value 0x21 or higher).
+
 #### UL underrun handling
 An *underrun* occurs when a transmitting subdevice runs out of UL samples.
 This should not happen in normal operation, as the slave paces the master (see **Baseband downlink/uplink**).
+An underrun can only occur once the slave has started transmitting samples. After transmission start, the slave waits
+for UL samples with the output unkeyed for as long as necessary - how many samples it buffers before keying is left to the slave.
 On an underrun, the slave shall:
 1. ramp the output amplitude down to zero over the samples remaining in its buffer, to avoid an abrupt amplitude step at the PA,
 2. stop transmitting (unkey),
@@ -553,6 +603,11 @@ For subdevice quantities, the context is defined by the subdevice identifier.
 * ZMQ high-water marks count messages, not bytes, and the operating system adds its own TCP buffers on both ends.
 Large queues translate directly into latency - at low sample rates, the default settings can buffer several seconds of signal.
 Keep `ZMQ_SNDHWM`/`ZMQ_RCVHWM` low and consider reducing `ZMQ_SNDBUF`/`ZMQ_RCVBUF` for the UL plane.
+* To end a transmission without cutting its tail, send the zero-byte end marker after the last samples and poll the TX state
+until it returns to idle. Action 0x04 is for aborting.
+* After a transmission stop (action 0x04) or a trip, UL samples of that transmission may still be in transit
+(in the master's ZMQ queue or in TCP buffers) and would be transmitted at the next transmission start.
+If that is not wanted, close the UL socket (CID 0x04 with port 0) and bind it again before starting, and reconnect the master's PUSH socket.
 * A master should use a receive timeout on its REQ socket. If a reply does not arrive, the REQ socket has to be closed and reopened
 (or `ZMQ_REQ_RELAXED` used) before sending another command.
 
@@ -581,6 +636,19 @@ finds the tripped subdevice by reading its TX state, clears the trip and starts 
 ![Transmission and UL underrun recovery](../gfx/TX_stream.png)
 
 **Figure 7** - Transmission and UL underrun recovery
+
+## Changes from CARI 2.0
+* Register 0x00 reads 0x21.
+* New: end of transmission by a zero-byte UL message. The slave plays out all samples before it and returns to idle.
+* Transmission stop (action 0x04) aborts at once and discards the UL samples not yet transmitted.
+* Closing the UL socket, or rebinding it to a different port, discards unread UL data.
+* Clarifications (behaviour that CARI 2.0 left open):
+  * status code precedence, multipart CTRL messages are malformed,
+  * binding the already-bound port is a no-op, a failed rebind keeps the previous socket, a tripped UL stream counts as stopped,
+  * CID 0x06: a stop ignores the period, unsupported quantities return 2, duplicates are published once,
+  * TX state on a subdevice without a transmitter returns 2, deviation outside FM/PM returns 8,
+  * transmission stop leaves a trip in place,
+  * no underrun can occur before the first UL samples.
 
 ## Changes from CARI 1.x
 * UL plane: the slave binds a PULL socket, the master connects a PUSH socket (previously PUB-SUB). CID 0x04 takes a port number and the slave binds.

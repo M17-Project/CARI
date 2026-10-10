@@ -24,7 +24,7 @@
           <mxGeometry relative="1" as="geometry">
           </mxGeometry>
         </mxCell>
-        <mxCell id="txstates-7" value="0x04 TX_STOP, 0x00 RESET" style="html=1;endArrow=block;endSize=6;rounded=0;endFill=1;verticalAlign=top;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="txstates-3" target="txstates-2" edge="1">
+        <mxCell id="txstates-7" value="0x04 TX_STOP, 0x00 RESET,&lt;br&gt;end of UL stream" style="html=1;endArrow=block;endSize=6;rounded=0;endFill=1;verticalAlign=top;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="txstates-3" target="txstates-2" edge="1">
           <mxGeometry relative="1" as="geometry">
           </mxGeometry>
         </mxCell>
