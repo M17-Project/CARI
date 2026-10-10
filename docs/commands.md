@@ -184,15 +184,15 @@ The reply CID is the first byte of the received message, or 0xFF if the message 
 using the first byte of the first frame as the reply CID.
 
 #### Status code precedence
-If a command fails for more than one reason, the slave replies with the first applicable status code in this order:
-1. 1 - malformed frame, or wrong length for the CID,
-2. 2 - unknown CID or reserved parameter ID (a *Set subdevice's parameter* command with a reserved parameter ID cannot be length-checked,
+If a command fails for more than one reason, the slave replies with the first applicable status code in the following order:
+1. malformed frame, or wrong length for the CID,
+2. unknown CID or reserved parameter ID (a *Set subdevice's parameter* command with a reserved parameter ID cannot be length-checked,
 so it is answered with status 2 rather than 1),
-3. 6 - invalid address,
-4. 2 - unsupported command, parameter, action or quantity,
-5. 7 - read-only,
-6. 5 - value out of range,
-7. 8 - invalid state.
+3. invalid address,
+4. unsupported command, parameter, action or quantity,
+5. read-only,
+6. value out of range,
+7. invalid state.
 
 Status 3 (bind failed) is reported only after all of the checks above have passed.
 
